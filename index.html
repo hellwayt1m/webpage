@@ -5,8 +5,805 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Проверка политики конфиденциальности</title>
     <script src="https://cdn.tailwindcss.com"></script>
-   
-       <body>
-           123123123123
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+        }
+        
+        .auth-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .result-item {
+            border-left: 4px solid transparent;
+            transition: all 0.2s ease;
+        }
+        
+        .result-item:hover {
+            background-color: #f8fafc;
+        }
+        
+        .result-item.success {
+            border-left-color: #10b981;
+            background-color: #f0fdf4;
+        }
+        
+        .result-item.warning {
+            border-left-color: #f59e0b;
+            background-color: #fffbeb;
+        }
+        
+        .result-item.error {
+            border-left-color: #ef4444;
+            background-color: #fef2f2;
+        }
+        
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .collapsible-content.active {
+            max-height: 2000px;
+        }
+        
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .status-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        .status-success { background: #10b981; color: white; }
+        .status-warning { background: #f59e0b; color: white; }
+        .status-error { background: #ef4444; color: white; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen text-gray-800">
+
+    <!-- Авторизация -->
+    <div class="auth-overlay" id="authOverlay">
+        <div class="bg-white p-8 rounded-xl shadow-2xl max-w-md w-full mx-4">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">🔒 Доступ к проверке</h2>
+            <p class="text-gray-600 mb-6 text-center">Введите пароль для доступа к сервису</p>
+            <input type="password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-6" 
+                   id="authPassword" placeholder="Пароль">
+            <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors" 
+                    onclick="authenticate()">Войти</button>
+        </div>
+    </div>
+
+    <!-- Основное приложение -->
+    <div id="mainApp" class="hidden">
+        <div class="container mx-auto max-w-4xl px-4 py-6">
+            
+            <!-- Заголовок -->
+            <header class="text-center mb-6">
+                <div class="flex justify-end mb-4">
+                    <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm transition-colors">
+                        Выйти
+                    </button>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-900 mb-2">
+                    🛡️ Проверка политики конфиденциальности
+                </h1>
+                <p class="text-gray-600 text-sm">
+                    Анализ соответствия требованиям ФЗ-152 с учетом изменений 2025 года
+                </p>
+            </header>
+
+            <!-- Форма ввода -->
+            <div class="bg-white rounded-lg shadow-md border border-gray-200 mb-6">
+                <div class="p-6">
+                    
+                    <!-- Уведомления -->
+                    <div id="successAlert" class="hidden mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <p class="text-green-800 text-sm font-medium"></p>
+                    </div>
+                    <div id="errorAlert" class="hidden mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                        <p class="text-red-800 text-sm font-medium"></p>
+                    </div>
+
+                    <!-- Выбор метода -->
+                    <div class="mb-4 flex flex-col sm:flex-row justify-center space-y-2 sm:space-y-0 sm:space-x-6">
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="radio" class="form-radio h-4 w-4 text-blue-600" name="inputMethod" value="url" checked>
+                            <span class="ml-2 text-gray-700 font-medium">Проверка по ссылке</span>
+                        </label>
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="radio" class="form-radio h-4 w-4 text-blue-600" name="inputMethod" value="text">
+                            <span class="ml-2 text-gray-700 font-medium">Проверка текста</span>
+                        </label>
+                    </div>
+
+                    <!-- Поле URL -->
+                    <div id="urlInputContainer" class="mb-4">
+                        <label class="block text-gray-700 font-semibold mb-2 text-sm">Ссылка на политику конфиденциальности:</label>
+                        <input type="url" id="policyUrl" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="https://example.com/privacy">
+                    </div>
+
+                    <!-- Поле текста -->
+                    <div id="textInputContainer" class="mb-4 hidden">
+                        <label class="block text-gray-700 font-semibold mb-2 text-sm">Текст политики конфиденциальности:</label>
+                        <textarea id="policyText" rows="6"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                  placeholder="Вставьте полный текст политики..."></textarea>
+                    </div>
+
+                    <!-- Кнопки -->
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <button id="analyzeBtn" onclick="analyzePolicy()"
+                                class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
+                            🔍 Провести проверку
+                        </button>
+                        <button onclick="clearResults()"
+                                class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition-colors">
+                            Очистить
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Загрузка -->
+            <div id="loading" class="hidden text-center py-6">
+                <div class="inline-block h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full spinner"></div>
+                <p class="text-gray-600 mt-2">Анализ документа по требованиям ФЗ-152...</p>
+            </div>
+
+            <!-- Результаты -->
+            <div id="results" class="hidden space-y-4">
+                
+                <!-- Общая оценка -->
+                <div class="bg-white rounded-lg shadow-md border border-gray-200 p-4">
+                    <div class="flex items-center justify-between flex-col sm:flex-row gap-4">
+                        <div class="flex items-center gap-3">
+                            <div id="scoreCircle" class="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold">
+                                <span id="scoreValue">0%</span>
+                            </div>
+                            <div>
+                                <h3 id="scoreTitle" class="font-semibold text-gray-900">Общая оценка</h3>
+                                <p id="scoreDesc" class="text-gray-600 text-sm">Проверка завершена</p>
+                            </div>
+                        </div>
+                        <div id="riskIndicator" class="px-3 py-1 rounded-lg font-semibold text-sm">
+                            Низкий риск
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Детальные результаты -->
+                <div class="bg-white rounded-lg shadow-md border border-gray-200">
+                    <button onclick="toggleSection('detailedResults')" 
+                            class="w-full p-4 text-left flex items-center justify-between font-semibold text-gray-900 hover:bg-gray-50">
+                        <span>📋 Детальные результаты проверки</span>
+                        <span id="detailedResultsIcon" class="text-gray-500">▼</span>
+                    </button>
+                    <div id="detailedResultsContent" class="collapsible-content">
+                        <div class="p-4 border-t border-gray-200">
+                            <div id="checksContainer" class="space-y-2"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Рекомендации -->
+                <div class="bg-white rounded-lg shadow-md border border-gray-200">
+                    <button onclick="toggleSection('recommendations')" 
+                            class="w-full p-4 text-left flex items-center justify-between font-semibold text-gray-900 hover:bg-gray-50">
+                        <span>💡 Рекомендации</span>
+                        <span id="recommendationsIcon" class="text-gray-500">▼</span>
+                    </button>
+                    <div id="recommendationsContent" class="collapsible-content">
+                        <div class="p-4 border-t border-gray-200">
+                            <div id="recList" class="space-y-3"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Правовая информация -->
+                <div class="bg-white rounded-lg shadow-md border border-gray-200">
+                    <button onclick="toggleSection('legalInfo')" 
+                            class="w-full p-4 text-left flex items-center justify-between font-semibold text-gray-900 hover:bg-gray-50">
+                        <span>⚖️ Правовая информация и возможные штрафы</span>
+                        <span id="legalInfoIcon" class="text-gray-500">▼</span>
+                    </button>
+                    <div id="legalInfoContent" class="collapsible-content">
+                        <div class="p-4 border-t border-gray-200">
+                            <h4 class="font-semibold text-gray-900 mb-3">Возможные штрафы за нарушения 152-ФЗ (2025):</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div class="p-3 bg-red-50 rounded-lg border border-red-200">
+                                    <h5 class="font-semibold text-red-800 mb-2">Критические нарушения:</h5>
+                                    <ul class="text-sm text-red-700 space-y-1">
+                                        <li>• Локализация данных: до 18 млн руб.</li>
+                                        <li>• Биометрические данные: до 20 млн руб.</li>
+                                        <li>• Массовая утечка: до 15 млн руб.</li>
+                                    </ul>
+                                </div>
+                                <div class="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                                    <h5 class="font-semibold text-yellow-800 mb-2">Обычные нарушения:</h5>
+                                    <ul class="text-sm text-yellow-700 space-y-1">
+                                        <li>• Нарушение порядка обработки: до 500 тыс. руб.</li>
+                                        <li>• Неуведомление Роскомнадзора: до 300 тыс. руб.</li>
+                                        <li>• Обработка без согласия: до 500 тыс. руб.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Скачивание отчета -->
+                <div class="bg-white rounded-lg shadow-md border border-gray-200 p-4">
+                    <h3 class="font-semibold text-gray-900 mb-3">📄 Скачать отчет</h3>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <button onclick="downloadReport('txt')" 
+                                class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
+                            📄 Скачать TXT
+                        </button>
+                        <button onclick="downloadReport('html')" 
+                                class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
+                            📄 Скачать для Word (HTML)
+                        </button>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-2">
+                        Отчет содержит все выявленные проблемы и рекомендации по их устранению
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Compliance checks for Russian Federal Law 152-FZ (2025)
+        const COMPLIANCE_CHECKS = [
+            {
+                id: 'general_provisions',
+                title: 'Общие положения',
+                description: 'Описание принципов обработки персональных данных',
+                keywords: ['общие положения', 'принципы обработки', 'цель политики', '152-фз', 'федеральный закон'],
+                required: true,
+                priority: 'medium',
+                lawRef: 'Ст. 18.1 152-ФЗ',
+                penalty: 'до 300 000 руб.',
+                recommendation: 'Добавьте раздел "Общие положения" с описанием принципов законности, справедливости и добросовестности обработки персональных данных согласно ст. 18.1 152-ФЗ.'
+            },
+            {
+                id: 'operator_details',
+                title: 'Сведения об операторе',
+                description: 'Наименование, ОГРН, ИНН, юридический адрес оператора',
+                keywords: ['огрн', 'инн', 'наименование', 'юридический адрес', 'оператор', 'ооо', 'ао', 'ип', 'зарегистрирован'],
+                required: true,
+                priority: 'critical',
+                lawRef: 'п.1 ч.1 ст.18.1 152-ФЗ',
+                penalty: 'до 300 000 руб.',
+                recommendation: 'КРИТИЧНО: Укажите полное наименование организации, ОГРН, ИНН и юридический адрес оператора персональных данных.'
+            },
+            {
+                id: 'contact_info',
+                title: 'Контактная информация',
+                description: 'Контакты для обращений по вопросам персональных данных',
+                keywords: ['контакт', 'обращение', 'персональные данные', 'email', 'почта', 'телефон', 'ответственный', 'связь'],
+                required: true,
+                priority: 'high',
+                lawRef: 'п.8 ч.1 ст.18.1 152-ФЗ',
+                penalty: 'до 300 000 руб.',
+                recommendation: 'Укажите контактные данные ответственного за обработку персональных данных (email, телефон).'
+            },
+            {
+                id: 'legal_grounds',
+                title: 'Правовые основания обработки',
+                description: 'Ссылки на статью 6 152-ФЗ с конкретными пунктами',
+                keywords: ['статья 6', 'пункт 1', 'пункт 5', 'пункт 6', 'согласие', 'договор', 'законные интересы', 'правовые основания', 'основание обработки'],
+                required: true,
+                priority: 'critical',
+                lawRef: 'Ст.6 152-ФЗ',
+                penalty: 'до 15 млн руб.',
+                recommendation: 'КРИТИЧНО: Укажите правовые основания обработки с отсылкой к пункту 1 (согласие), пункту 5 (договор), пункту 6 (законные интересы) части 1 статьи 6 152-ФЗ.'
+            },
+            {
+                id: 'processing_purposes',
+                title: 'Цели обработки данных',
+                description: 'Конкретные цели для каждой категории обрабатываемых данных',
+                keywords: ['цель обработки', 'цели сбора', 'регистрация', 'исполнение договора', 'обслуживание клиентов', 'оказание услуг'],
+                required: true,
+                priority: 'critical',
+                lawRef: 'п.3 ч.1 ст.18.1 152-ФЗ',
+                penalty: 'до 15 млн руб.',
+                recommendation: 'КРИТИЧНО: Укажите цели обработки для каждой категории персональных данных.'
+            },
+            {
+                id: 'data_categories',
+                title: 'Категории обрабатываемых данных',
+                description: 'Полный перечень видов собираемых персональных данных',
+                keywords: ['фамилия', 'имя', 'отчество', 'email', 'почта', 'телефон', 'адрес', 'категории данных', 'паспорт', 'персональные данные'],
+                required: true,
+                priority: 'high',
+                lawRef: 'п.4 ч.1 ст.18.1 152-ФЗ',
+                penalty: 'до 10 млн руб.',
+                recommendation: 'Перечислите все категории обрабатываемых персональных данных.'
+            },
+            {
+                id: 'subject_categories',
+                title: 'Категории субъектов данных',
+                description: 'Перечень категорий лиц, чьи данные обрабатываются',
+                keywords: ['субъект', 'клиент', 'пользователь', 'посетитель', 'сотрудник', 'заказчик', 'покупатель'],
+                required: true,
+                priority: 'medium',
+                lawRef: 'п.4 ч.1 ст.18.1 152-ФЗ',
+                penalty: 'до 5 млн руб.',
+                recommendation: 'Перечислите все категории субъектов персональных данных: клиенты, пользователи, сотрудники и т.д.'
+            },
+            {
+                id: 'retention_periods',
+                title: 'Сроки хранения данных',
+                description: 'Конкретные сроки хранения для каждой категории данных',
+                keywords: ['срок хранения', 'период обработки', 'год', 'месяц', 'уничтожение', 'удаление', 'хранить', 'период'],
+                required: true,
+                priority: 'critical',
+                lawRef: 'п.6 ч.1 ст.18.1 152-ФЗ',
+                penalty: 'до 15 млн руб.',
+                recommendation: 'КРИТИЧНО: Установите конкретные сроки хранения для каждой категории персональных данных.'
+            },
+            {
+                id: 'subject_rights',
+                title: 'Права субъектов данных',
+                description: 'Полное описание прав субъектов данных и порядка их реализации',
+                keywords: ['права субъекта', 'доступ к данным', 'изменение', 'удаление', 'отзыв согласия', 'блокировка', 'доступ к информации'],
+                required: true,
+                priority: 'critical',
+                lawRef: 'Ст.14 152-ФЗ',
+                penalty: 'до 10 млн руб.',
+                recommendation: 'КРИТИЧНО: Опишите все права субъектов персональных данных и порядок их реализации.'
+            },
+            {
+                id: 'response_timeframe',
+                title: 'Срок ответа на запросы',
+                description: 'Конкретные сроки ответа на запросы субъектов данных',
+                keywords: ['30 дней', '10 рабочих дней', 'срок ответа', 'ответ на запрос', 'рассмотреть', 'ответить'],
+                required: true,
+                priority: 'high',
+                lawRef: 'ч.4 ст.14 152-ФЗ',
+                penalty: 'до 5 млн руб.',
+                recommendation: 'Укажите срок ответа на запросы субъектов данных — не более 30 дней.'
+            },
+            {
+                id: 'security_measures',
+                title: 'Меры по обеспечению безопасности',
+                description: 'Организационные и технические меры безопасности',
+                keywords: ['защита', 'безопасность', 'технические меры', 'организационные меры', 'шифрование', 'меры безопасности'],
+                required: true,
+                priority: 'critical',
+                lawRef: 'Ст.19 152-ФЗ',
+                penalty: 'до 15 млн руб.',
+                recommendation: 'КРИТИЧНО: Опишите организационные и технические меры по защите персональных данных.'
+            },
+            {
+                id: 'localization_2025',
+                title: 'ЛОКАЛИЗАЦИЯ ДАННЫХ (с 01.07.2025)',
+                description: 'Обработка и хранение данных только в России',
+                keywords: ['территория россии', 'российская федерация', 'локализация', 'серверы в россии', 'хранение в россии', 'обработка в россии'],
+                required: true,
+                priority: 'critical',
+                lawRef: 'ч.5 ст.18 152-ФЗ (с 01.07.2025)',
+                penalty: 'до 18 млн руб.',
+                recommendation: '🚨 КРИТИЧНО: С 01.07.2025 все персональные данные граждан РФ должны обрабатываться только в России.'
+            },
+            {
+                id: 'separate_consent_2025',
+                title: 'ОТДЕЛЬНОЕ СОГЛАСИЕ (с 01.09.2025)',
+                description: 'Согласие должно быть отдельным документом',
+                keywords: ['отдельное согласие', 'отдельный документ', 'независимо от договора', 'отдельно', 'самостоятельно'],
+                required: true,
+                priority: 'critical',
+                lawRef: 'ч.4 ст.9 152-ФЗ (с 01.09.2025)',
+                penalty: 'до 15 млн руб.',
+                recommendation: '🚨 КРИТИЧНО: С 01.09.2025 согласие должно быть отдельным документом.'
+            },
+            {
+                id: 'incident_notification',
+                title: 'Уведомление об инцидентах',
+                description: 'Порядок уведомления Роскомнадзора о нарушениях',
+                keywords: ['инцидент', '24 часа', 'утечка данных', 'роскомнадзор', 'уведомление', 'нарушение безопасности', 'сообщить'],
+                required: true,
+                priority: 'critical',
+                lawRef: 'ч.6 ст.21 152-ФЗ (с 30.05.2025)',
+                penalty: 'до 20 млн руб.',
+                recommendation: 'КРИТИЧНО: Укажите обязанность уведомлять Роскомнадзор об инцидентах в течение 24 часов.'
+            },
+            {
+                id: 'registry_notification',
+                title: 'Уведомление Роскомнадзора',
+                description: 'Уведомление о начале обработки данных',
+                keywords: ['уведомление роскомнадзора', 'реестр операторов', 'подача уведомления', 'регистрация', 'уведомить', 'подать'],
+                required: true,
+                priority: 'critical',
+                lawRef: 'Ст.22 152-ФЗ',
+                penalty: 'до 300 000 руб.',
+                recommendation: 'КРИТИЧНО: Подайте уведомление в Роскомнадзор о начале обработки персональных данных.'
+            }
+        ];
+        let analysisData = null;
+        // Authentication system
+        function checkAuth() {
+            const isAuthenticated = localStorage.getItem('privacy_audit_auth') === 'true';
+            if (isAuthenticated) {
+                document.getElementById('authOverlay').style.display = 'none';
+                document.getElementById('mainApp').classList.remove('hidden');
+            } else {
+                document.getElementById('authOverlay').style.display = 'flex';
+                document.getElementById('mainApp').classList.add('hidden');
+            }
+        }
+        function authenticate() {
+            const password = document.getElementById('authPassword').value;
+            if (password === '1234') {
+                localStorage.setItem('privacy_audit_auth', 'true');
+                checkAuth();
+                document.getElementById('authPassword').value = '';
+            } else {
+                alert('Incorrect password');
+                document.getElementById('authPassword').value = '';
+            }
+        }
+        function logout() {
+            localStorage.removeItem('privacy_audit_auth');
+            checkAuth();
+        }
+        // Section toggling
+        function toggleSection(sectionId) {
+            const content = document.getElementById(sectionId + 'Content');
+            const icon = document.getElementById(sectionId + 'Icon');
+            content.classList.toggle('active');
+            icon.textContent = content.classList.contains('active') ? '▲' : '▼';
+        }
+        // Input method switching
+        document.addEventListener('DOMContentLoaded', () => {
+            const inputMethodRadios = document.querySelectorAll('input[name="inputMethod"]');
+            const urlContainer = document.getElementById('urlInputContainer');
+            const textContainer = document.getElementById('textInputContainer');
+            inputMethodRadios.forEach(radio => {
+                radio.addEventListener('change', (event) => {
+                    if (event.target.value === 'url') {
+                        urlContainer.classList.remove('hidden');
+                        textContainer.classList.add('hidden');
+                    } else {
+                        urlContainer.classList.add('hidden');
+                        textContainer.classList.remove('hidden');
+                    }
+                    clearResults();
+                });
+            });
+            checkAuth();
+            document.getElementById('authPassword').addEventListener('keypress', e => {
+                if (e.key === 'Enter') authenticate();
+            });
+        });
+        // Alert functions
+        function showAlert(msg, type = 'error') {
+            const alertEl = document.getElementById(type === 'error' ? 'errorAlert' : 'successAlert');
+            alertEl.querySelector('p').textContent = msg;
+            alertEl.classList.remove('hidden');
+            setTimeout(() => alertEl.classList.add('hidden'), 5000);
+        }
+        function clearResults() {
+            document.getElementById('policyUrl').value = '';
+            document.getElementById('policyText').value = '';
+            document.getElementById('results').classList.add('hidden');
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('successAlert').classList.add('hidden');
+            document.getElementById('errorAlert').classList.add('hidden');
+        }
+        // Main analysis function (переписано под один рабочий прокси)
+        async function analyzePolicy() {
+            document.getElementById('successAlert').classList.add('hidden');
+            document.getElementById('errorAlert').classList.add('hidden');
+            document.getElementById('results').classList.add('hidden');
+            document.getElementById('loading').classList.add('hidden');
+
+            const isUrl = document.querySelector('input[name="inputMethod"]:checked').value === 'url';
+            let content = '';
+
+            if (isUrl) {
+                const url = document.getElementById('policyUrl').value.trim();
+                if (!url) return showAlert('Укажите URL документа');
+                if (!/^https?:\/\//.test(url)) return showAlert('Некорректный URL');
+                document.getElementById('loading').classList.remove('hidden');
+                document.getElementById('analyzeBtn').disabled = true;
+                try {
+                    const proxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+                    const resp = await fetch(proxy);
+                    if (!resp.ok) throw new Error('Ошибка загрузки');
+                    content = await resp.text();
+                    // Очищаем от html тегов
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(content, 'text/html');
+                    const elementsToRemove = ['script', 'style', 'nav', 'header', 'footer', 'aside', '.menu', '.navigation', '.ads', '.sidebar'];
+                    elementsToRemove.forEach(selector => {
+                        doc.querySelectorAll(selector).forEach(el => el.remove());
+                    });
+                    content = doc.body ? (doc.body.textContent || doc.body.innerText || '') : '';
+                    content = content.replace(/\s+/g, ' ').trim();
+                    if (!content || content.length < 200) {
+                        throw new Error('Недостаточно текста для анализа');
+                    }
+                } catch (error) {
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('analyzeBtn').disabled = false;
+                    return showAlert('Не удалось загрузить документ');
+                }
+            } else {
+                content = document.getElementById('policyText').value.trim();
+                if (content.length < 200) return showAlert('Текст слишком короткий');
+                document.getElementById('loading').classList.remove('hidden');
+                document.getElementById('analyzeBtn').disabled = true;
+            }
+            await new Promise(r => setTimeout(r, 1200));
+            analysisData = performImprovedAnalysis(content);
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('analyzeBtn').disabled = false;
+            displayResults();
+            showAlert('Проверка завершена', 'success');
+        }
+        // Improved analysis function
+        function performImprovedAnalysis(content) {
+            const contentLower = content.toLowerCase()
+                .replace(/[^\wа-я\s]/gi, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+            const results = [];
+            const recommendations = [];
+            let criticalIssues = 0;
+            let highIssues = 0;
+            let passedCount = 0;
+            COMPLIANCE_CHECKS.forEach(check => {
+                let matches = 0;
+                const totalKeywords = check.keywords.length;
+                check.keywords.forEach(keyword => {
+                    const keywordLower = keyword.toLowerCase().replace(/[^\wа-я\s]/gi, ' ');
+                    const patterns = [
+                        new RegExp('\\b' + keywordLower.replace(/\s+/g, '\\s+') + '\\b', 'gi'),
+                        new RegExp(keywordLower.replace(/\s+/g, '.*?'), 'gi')
+                    ];
+                    if (patterns.some(pattern => pattern.test(contentLower))) {
+                        matches++;
+                    }
+                });
+                let threshold = 0.3;
+                if (check.priority === 'critical') threshold = 0.5;
+                else if (check.priority === 'high') threshold = 0.4;
+                else if (check.priority === 'medium') threshold = 0.3;
+                else threshold = 0.2;
+                const matchRatio = matches / totalKeywords;
+                const passed = matchRatio >= threshold;
+                if (passed) {
+                    passedCount++;
+                } else {
+                    if (check.priority === 'critical') criticalIssues++;
+                    else if (check.priority === 'high') highIssues++;
+                    recommendations.push({
+                        title: check.title,
+                        description: check.description,
+                        lawRef: check.lawRef,
+                        penalty: check.penalty,
+                        recommendation: check.recommendation,
+                        priority: check.priority
+                    });
+                }
+                results.push({
+                    ...check,
+                    passed,
+                    matches,
+                    totalKeywords,
+                    matchRatio: Math.round(matchRatio * 100)
+                });
+            });
+            const totalChecks = COMPLIANCE_CHECKS.length;
+            const score = Math.round((passedCount / totalChecks) * 100);
+            let riskLevel = 'low';
+            if (criticalIssues >= 3 || score < 40) riskLevel = 'critical';
+            else if (criticalIssues >= 1 || highIssues >= 3 || score < 70) riskLevel = 'high';
+            else if (highIssues >= 1 || score < 85) riskLevel = 'medium';
+            return {
+                score,
+                results,
+                recommendations,
+                criticalIssues,
+                highIssues,
+                passedCount,
+                totalChecks,
+                riskLevel
+            };
+        }
+        // Display results
+        function displayResults() {
+            const {score, results, recommendations, riskLevel, passedCount, totalChecks} = analysisData;
+            const scoreEl = document.getElementById('scoreValue');
+            const circleEl = document.getElementById('scoreCircle');
+            const titleEl = document.getElementById('scoreTitle');
+            const descEl = document.getElementById('scoreDesc');
+            const riskEl = document.getElementById('riskIndicator');
+            scoreEl.textContent = score + '%';
+            if (score >= 85) {
+                circleEl.className = 'w-16 h-16 rounded-full flex items-center justify-center text-white font-bold bg-green-500';
+                titleEl.textContent = 'Высокий уровень соответствия';
+                descEl.textContent = `Выполнено ${passedCount} из ${totalChecks} требований`;
+            } else if (score >= 70) {
+                circleEl.className = 'w-16 h-16 rounded-full flex items-center justify-center text-white font-bold bg-yellow-500';
+                titleEl.textContent = 'Требуются доработки';
+                descEl.textContent = `Выполнено ${passedCount} из ${totalChecks} требований`;
+            } else {
+                circleEl.className = 'w-16 h-16 rounded-full flex items-center justify-center text-white font-bold bg-red-500';
+                titleEl.textContent = 'Серьёзные нарушения';
+                descEl.textContent = `Выполнено ${passedCount} из ${totalChecks} требований`;
+            }
+            const riskTexts = {
+                'critical': 'КРИТИЧЕСКИЙ РИСК',
+                'high': 'ВЫСОКИЙ РИСК',
+                'medium': 'СРЕДНИЙ РИСК',
+                'low': 'НИЗКИЙ РИСК'
+            };
+            const riskColors = {
+                'critical': 'bg-red-500 text-white',
+                'high': 'bg-orange-500 text-white',
+                'medium': 'bg-yellow-500 text-white',
+                'low': 'bg-green-500 text-white'
+            };
+            riskEl.textContent = riskTexts[riskLevel];
+            riskEl.className = `px-3 py-1 rounded-lg font-semibold text-sm ${riskColors[riskLevel]}`;
+            const checksContainer = document.getElementById('checksContainer');
+            checksContainer.innerHTML = '';
+            results.forEach(result => {
+                const item = document.createElement('div');
+                item.className = `result-item p-3 rounded-lg ${result.passed ? 'success' : result.priority === 'critical' ? 'error' : 'warning'}`;
+                const statusIcon = result.passed ? '✓' : '✗';
+                const statusClass = result.passed ? 'status-success' : result.priority === 'critical' ? 'status-error' : 'status-warning';
+                const priorityText = {
+                    'critical': 'КРИТИЧНО',
+                    'high': 'ВАЖНО',
+                    'medium': 'СРЕДНЕ',
+                    'low': 'НИЗКО'
+                }[result.priority];
+                item.innerHTML = `
+                    <div class="flex items-start gap-3">
+                        <div class="${statusClass} status-icon">${statusIcon}</div>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-1">
+                                <h4 class="font-semibold text-gray-900 text-sm">${result.title}</h4>
+                                <span class="text-xs px-2 py-1 rounded-full bg-gray-200 text-gray-700">${priorityText}</span>
+                            </div>
+                            <p class="text-gray-700 text-sm mb-1">${result.description}</p>
+                            <p class="text-blue-600 text-xs">${result.lawRef}</p>
+                            ${!result.passed ? `<p class="text-red-600 text-xs font-medium mt-1">Возможный штраф: ${result.penalty}</p>` : ''}
+                            <p class="text-gray-500 text-xs mt-1">Совпадений: ${result.matches}/${result.totalKeywords} (${result.matchRatio}%)</p>
+                        </div>
+                    </div>
+                `;
+                checksContainer.appendChild(item);
+            });
+            const recList = document.getElementById('recList');
+            recList.innerHTML = '';
+            if (recommendations.length > 0) {
+                recommendations.forEach(rec => {
+                    const recDiv = document.createElement('div');
+                    recDiv.className = 'bg-gray-50 p-3 rounded-lg border border-gray-200';
+                    const priorityColor = rec.priority === 'critical' ? 'text-red-600' : 
+                                        rec.priority === 'high' ? 'text-orange-600' : 'text-yellow-600';
+                    recDiv.innerHTML = `
+                        <h5 class="font-semibold text-gray-900 mb-2 ${priorityColor} text-sm">${rec.title}</h5>
+                        <p class="text-gray-700 text-sm mb-2">${rec.description}</p>
+                        <p class="text-blue-600 text-sm mb-2"><strong>Правовое основание:</strong> ${rec.lawRef}</p>
+                        <p class="text-gray-900 text-sm mb-2"><strong>Что делать:</strong> ${rec.recommendation}</p>
+                        <p class="text-red-600 text-sm font-medium"><strong>Возможный штраф:</strong> ${rec.penalty}</p>
+                    `;
+                    recList.appendChild(recDiv);
+                });
+            } else {
+                recList.innerHTML = '<div class="bg-green-50 p-3 rounded-lg border border-green-200"><p class="text-green-800 font-medium">Критических нарушений не обнаружено</p><p class="text-green-700 text-sm">Политика соответствует основным требованиям 152-ФЗ.</p></div>';
+            }
+            document.getElementById('results').classList.remove('hidden');
+        }
+        // Download report with correct encoding
+        function downloadReport(format) {
+            if (!analysisData) return showAlert('Сначала проведите проверку');
+            const reportText = generateDetailedReport();
+            if (format === 'txt') {
+                downloadAsText(reportText, 'otchet_o_problemakh_politiki.txt');
+            } else if (format === 'html') {
+                downloadAsHtml(reportText, 'otchet_o_problemakh_politiki.html');
+            }
+            showAlert('Отчет скачан', 'success');
+        }
+        function downloadAsText(content, filename) {
+            const BOM = '\uFEFF';
+            const blob = new Blob([BOM + content], {type: 'text/plain;charset=utf-8'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        function downloadAsHtml(content, filename) {
+            const htmlContent = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset=\"UTF-8\">
+                    <title>Отчёт о проверке политики конфиденциальности</title>
+                    <style>
+                        body { font-family: 'Times New Roman', serif; line-height: 1.6; margin: 2cm; }
+                        h1, h2, h3 { color: #333; }
+                        .critical { color: #dc2626; font-weight: bold; }
+                        .important { color: #ea580c; font-weight: bold; }
+                        .normal { color: #059669; }
+                    </style>
+                </head>
+                <body>
+                    ${content.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}
+                </body>
+                </html>
+            `;
+            const blob = new Blob(['\ufeff', htmlContent], {
+                type: 'text/html;charset=utf-8'
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        function generateDetailedReport() {
+            const reportDate = new Date().toLocaleString('ru-RU');
+            const {score, results, recommendations, criticalIssues, riskLevel} = analysisData;
+            let report = `ОТЧЁТ О ПРОВЕРКЕ ПОЛИТИКИ КОНФИДЕНЦИАЛЬНОСТИ\nДата: ${reportDate}\nОбщий балл: ${score}%\nУровень риска: ${riskLevel.toUpperCase()}\n\nВЫЯВЛЕННЫЕ ПРОБЛЕМЫ:\n`;
+            let problemCount = 1;
+            results.filter(r => !r.passed).forEach(result => {
+                const priorityText = result.priority === 'critical' ? 'КРИТИЧНО' : 
+                                  result.priority === 'high' ? 'ВАЖНО' : 'СРЕДНЕ';
+                report += `\n${problemCount}. **${result.title}** (${priorityText})\n   Описание: ${result.description}\n   Правовое основание: ${result.lawRef}\n   Возможный штраф: ${result.penalty}\n   Совпадений: ${result.matches}/${result.totalKeywords} (${result.matchRatio}%)\n   \n`;
+                problemCount++;
+            });
+            if (recommendations.length > 0) {
+                report += `\nРЕКОМЕНДАЦИИ:\n`;
+                recommendations.forEach((rec, index) => {
+                    const priorityMarker = rec.priority === 'critical' ? '🚨 ' : 
+                                         rec.priority === 'high' ? '⚠️ ' : '📋 ';
+                    report += `\n${index + 1}. ${priorityMarker}**${rec.title}**\n   ${rec.recommendation}\n   \n   Правовое основание: ${rec.lawRef}\n   Возможные последствия: ${rec.penalty}\n   \n`;
+                });
+            }
+            report += `\nКРИТИЧЕСКИЕ ТРЕБОВАНИЯ НА 2025 ГОД:\n- С 01.07.2025: Обязательная локализация данных граждан РФ (штраф до 18 млн руб.)\n- С 01.09.2025: Согласие должно быть отдельным документом (штраф до 15 млн руб.)\n- С 30.05.2025: Уведомление Роскомнадзора об инцидентах в течение 24 часов\n\nВАЖНО: Данный отчёт носит информационный характер и не заменяет юридическую консультацию.\nРекомендуется обратиться к специалистам по защите персональных данных для детальной правовой оценки и подготовки документов.\n\nОтчёт сгенерирован автоматизированной системой проверки соответствия 152-ФЗ.\n`;
+            return report;
+        }
+    </script>
 </body>
 </html>
