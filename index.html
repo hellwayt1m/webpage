@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Проверка политики конфиденциальности</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
@@ -449,6 +450,7 @@
         ];
         let analysisData = null;
         // Authentication system
+        const PASSWORD_HASH = '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4'; // SHA-256 для '1234'
         function checkAuth() {
             const isAuthenticated = localStorage.getItem('privacy_audit_auth') === 'true';
             if (isAuthenticated) {
@@ -461,7 +463,8 @@
         }
         function authenticate() {
             const password = document.getElementById('authPassword').value;
-            if (password === '1234') {
+            const hash = CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex);
+            if (hash === PASSWORD_HASH) {
                 localStorage.setItem('privacy_audit_auth', 'true');
                 checkAuth();
                 document.getElementById('authPassword').value = '';
