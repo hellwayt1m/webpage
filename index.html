@@ -97,25 +97,6 @@
             <div id="authError" class="text-xs text-red-600 mb-2 hidden"></div>
             <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors mb-2" 
                     onclick="authenticate()">Войти</button>
-            <button class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition-colors text-sm" 
-                    onclick="showChangePassword()">Сменить пароль</button>
-        </div>
-    </div>
-    <!-- Смена пароля -->
-    <div class="auth-overlay hidden" id="changePasswordOverlay">
-        <div class="bg-white p-8 rounded-xl shadow-2xl max-w-md w-full mx-4">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">Смена пароля</h2>
-            <input type="password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-2" 
-                   id="oldPassword" placeholder="Текущий пароль" autocomplete="current-password">
-            <input type="password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-2" 
-                   id="newPassword" placeholder="Новый пароль" autocomplete="new-password">
-            <input type="password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-2" 
-                   id="repeatNewPassword" placeholder="Повторите новый пароль" autocomplete="new-password">
-            <div id="changePassError" class="text-xs text-red-600 mb-2 hidden"></div>
-            <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors mb-2" 
-                    onclick="changePassword()">Сменить пароль</button>
-            <button class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition-colors text-sm" 
-                    onclick="hideChangePassword()">Отмена</button>
         </div>
     </div>
 
@@ -471,7 +452,7 @@
         ];
         let analysisData = null;
         // Authentication system
-        let PASSWORD_HASH = localStorage.getItem('privacy_audit_hash') || '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4'; // SHA-256 для '1234'
+        const PASSWORD_HASH = '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4'; // SHA-256 для '1234'
         let authAttempts = parseInt(localStorage.getItem('privacy_audit_attempts') || '0');
         let authBlockedUntil = parseInt(localStorage.getItem('privacy_audit_blocked_until') || '0');
         function checkAuth() {
@@ -483,7 +464,6 @@
                 document.getElementById('authOverlay').style.display = 'flex';
                 document.getElementById('mainApp').classList.add('hidden');
             }
-            document.getElementById('changePasswordOverlay').classList.add('hidden');
         }
         function authenticate() {
             const now = Date.now();
@@ -539,58 +519,6 @@
                 document.getElementById('capsLockWarning').classList.toggle('hidden', !caps);
             });
         });
-        // Change password logic
-        function showChangePassword() {
-            document.getElementById('authOverlay').style.display = 'none';
-            document.getElementById('changePasswordOverlay').classList.remove('hidden');
-            hideChangePassError();
-            document.getElementById('oldPassword').value = '';
-            document.getElementById('newPassword').value = '';
-            document.getElementById('repeatNewPassword').value = '';
-        }
-        function hideChangePassword() {
-            document.getElementById('changePasswordOverlay').classList.add('hidden');
-            document.getElementById('authOverlay').style.display = 'flex';
-        }
-        function showChangePassError(msg) {
-            const el = document.getElementById('changePassError');
-            el.textContent = msg;
-            el.classList.remove('hidden');
-        }
-        function hideChangePassError() {
-            const el = document.getElementById('changePassError');
-            el.textContent = '';
-            el.classList.add('hidden');
-        }
-        function changePassword() {
-            const oldPass = document.getElementById('oldPassword').value;
-            const newPass = document.getElementById('newPassword').value;
-            const repeatNew = document.getElementById('repeatNewPassword').value;
-            if (!oldPass || !newPass || !repeatNew) {
-                showChangePassError('Заполните все поля');
-                return;
-            }
-            if (newPass.length < 4) {
-                showChangePassError('Пароль должен быть не короче 4 символов');
-                return;
-            }
-            if (newPass !== repeatNew) {
-                showChangePassError('Пароли не совпадают');
-                return;
-            }
-            const oldHash = CryptoJS.SHA256(oldPass).toString(CryptoJS.enc.Hex);
-            if (oldHash !== PASSWORD_HASH) {
-                showChangePassError('Текущий пароль неверен');
-                return;
-            }
-            const newHash = CryptoJS.SHA256(newPass).toString(CryptoJS.enc.Hex);
-            PASSWORD_HASH = newHash;
-            localStorage.setItem('privacy_audit_hash', newHash);
-            showChangePassError('Пароль успешно изменён. Используйте новый пароль для входа.');
-            setTimeout(() => {
-                hideChangePassword();
-            }, 1500);
-        }
         // Сброс блокировки по времени
         setInterval(() => {
             if (authBlockedUntil && Date.now() > authBlockedUntil) {
