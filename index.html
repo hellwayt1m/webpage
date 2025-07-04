@@ -493,6 +493,7 @@
                 document.getElementById('authPassword').value = '';
             }
         }
+        window.authenticate = authenticate;
         function showAuthError(msg) {
             const el = document.getElementById('authError');
             el.textContent = msg;
