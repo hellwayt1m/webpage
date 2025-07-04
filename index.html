@@ -91,10 +91,31 @@
         <div class="bg-white p-8 rounded-xl shadow-2xl max-w-md w-full mx-4">
             <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">🔒 Доступ к проверке</h2>
             <p class="text-gray-600 mb-6 text-center">Введите пароль для доступа к сервису</p>
-            <input type="password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-6" 
-                   id="authPassword" placeholder="Пароль">
-            <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors" 
+            <input type="password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-2" 
+                   id="authPassword" placeholder="Пароль" autocomplete="current-password">
+            <div id="capsLockWarning" class="text-xs text-yellow-600 mb-2 hidden">Внимание: включён CapsLock</div>
+            <div id="authError" class="text-xs text-red-600 mb-2 hidden"></div>
+            <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors mb-2" 
                     onclick="authenticate()">Войти</button>
+            <button class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition-colors text-sm" 
+                    onclick="showChangePassword()">Сменить пароль</button>
+        </div>
+    </div>
+    <!-- Смена пароля -->
+    <div class="auth-overlay hidden" id="changePasswordOverlay">
+        <div class="bg-white p-8 rounded-xl shadow-2xl max-w-md w-full mx-4">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">Смена пароля</h2>
+            <input type="password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-2" 
+                   id="oldPassword" placeholder="Текущий пароль" autocomplete="current-password">
+            <input type="password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-2" 
+                   id="newPassword" placeholder="Новый пароль" autocomplete="new-password">
+            <input type="password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-2" 
+                   id="repeatNewPassword" placeholder="Повторите новый пароль" autocomplete="new-password">
+            <div id="changePassError" class="text-xs text-red-600 mb-2 hidden"></div>
+            <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors mb-2" 
+                    onclick="changePassword()">Сменить пароль</button>
+            <button class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition-colors text-sm" 
+                    onclick="hideChangePassword()">Отмена</button>
         </div>
     </div>
 
@@ -450,7 +471,9 @@
         ];
         let analysisData = null;
         // Authentication system
-        const PASSWORD_HASH = '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4'; 
+        let PASSWORD_HASH = localStorage.getItem('privacy_audit_hash') || '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4'; // SHA-256 для '1234'
+        let authAttempts = parseInt(localStorage.getItem('privacy_audit_attempts') || '0');
+        let authBlockedUntil = parseInt(localStorage.getItem('privacy_audit_blocked_until') || '0');
         function checkAuth() {
             const isAuthenticated = localStorage.getItem('privacy_audit_auth') === 'true';
             if (isAuthenticated) {
@@ -460,23 +483,124 @@
                 document.getElementById('authOverlay').style.display = 'flex';
                 document.getElementById('mainApp').classList.add('hidden');
             }
+            document.getElementById('changePasswordOverlay').classList.add('hidden');
         }
         function authenticate() {
+            const now = Date.now();
+            if (authBlockedUntil && now < authBlockedUntil) {
+                showAuthError('Слишком много попыток. Повторите через ' + Math.ceil((authBlockedUntil - now)/1000) + ' сек.');
+                return;
+            }
             const password = document.getElementById('authPassword').value;
             const hash = CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex);
             if (hash === PASSWORD_HASH) {
                 localStorage.setItem('privacy_audit_auth', 'true');
+                authAttempts = 0;
+                localStorage.setItem('privacy_audit_attempts', '0');
                 checkAuth();
                 document.getElementById('authPassword').value = '';
+                hideAuthError();
             } else {
-                alert('Incorrect password');
+                authAttempts++;
+                localStorage.setItem('privacy_audit_attempts', authAttempts.toString());
+                if (authAttempts >= 3) {
+                    authBlockedUntil = Date.now() + 60000;
+                    localStorage.setItem('privacy_audit_blocked_until', authBlockedUntil.toString());
+                    showAuthError('Слишком много попыток. Повторите через 60 сек.');
+                } else {
+                    showAuthError('Неверный пароль. Осталось попыток: ' + (3 - authAttempts));
+                }
                 document.getElementById('authPassword').value = '';
             }
+        }
+        function showAuthError(msg) {
+            const el = document.getElementById('authError');
+            el.textContent = msg;
+            el.classList.remove('hidden');
+        }
+        function hideAuthError() {
+            const el = document.getElementById('authError');
+            el.textContent = '';
+            el.classList.add('hidden');
         }
         function logout() {
             localStorage.removeItem('privacy_audit_auth');
             checkAuth();
         }
+        // CapsLock indicator
+        document.addEventListener('DOMContentLoaded', () => {
+            const passInput = document.getElementById('authPassword');
+            passInput.addEventListener('keyup', function(e) {
+                const caps = e.getModifierState && e.getModifierState('CapsLock');
+                document.getElementById('capsLockWarning').classList.toggle('hidden', !caps);
+            });
+            passInput.addEventListener('keydown', function(e) {
+                const caps = e.getModifierState && e.getModifierState('CapsLock');
+                document.getElementById('capsLockWarning').classList.toggle('hidden', !caps);
+            });
+        });
+        // Change password logic
+        function showChangePassword() {
+            document.getElementById('authOverlay').style.display = 'none';
+            document.getElementById('changePasswordOverlay').classList.remove('hidden');
+            hideChangePassError();
+            document.getElementById('oldPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('repeatNewPassword').value = '';
+        }
+        function hideChangePassword() {
+            document.getElementById('changePasswordOverlay').classList.add('hidden');
+            document.getElementById('authOverlay').style.display = 'flex';
+        }
+        function showChangePassError(msg) {
+            const el = document.getElementById('changePassError');
+            el.textContent = msg;
+            el.classList.remove('hidden');
+        }
+        function hideChangePassError() {
+            const el = document.getElementById('changePassError');
+            el.textContent = '';
+            el.classList.add('hidden');
+        }
+        function changePassword() {
+            const oldPass = document.getElementById('oldPassword').value;
+            const newPass = document.getElementById('newPassword').value;
+            const repeatNew = document.getElementById('repeatNewPassword').value;
+            if (!oldPass || !newPass || !repeatNew) {
+                showChangePassError('Заполните все поля');
+                return;
+            }
+            if (newPass.length < 4) {
+                showChangePassError('Пароль должен быть не короче 4 символов');
+                return;
+            }
+            if (newPass !== repeatNew) {
+                showChangePassError('Пароли не совпадают');
+                return;
+            }
+            const oldHash = CryptoJS.SHA256(oldPass).toString(CryptoJS.enc.Hex);
+            if (oldHash !== PASSWORD_HASH) {
+                showChangePassError('Текущий пароль неверен');
+                return;
+            }
+            const newHash = CryptoJS.SHA256(newPass).toString(CryptoJS.enc.Hex);
+            PASSWORD_HASH = newHash;
+            localStorage.setItem('privacy_audit_hash', newHash);
+            showChangePassError('Пароль успешно изменён. Используйте новый пароль для входа.');
+            setTimeout(() => {
+                hideChangePassword();
+            }, 1500);
+        }
+        // Сброс блокировки по времени
+        setInterval(() => {
+            if (authBlockedUntil && Date.now() > authBlockedUntil) {
+                authAttempts = 0;
+                authBlockedUntil = 0;
+                localStorage.setItem('privacy_audit_attempts', '0');
+                localStorage.setItem('privacy_audit_blocked_until', '0');
+                hideAuthError();
+            }
+        }, 1000);
         // Section toggling
         function toggleSection(sectionId) {
             const content = document.getElementById(sectionId + 'Content');
@@ -628,239 +752,5 @@
         }
         // Improved analysis function
         function performImprovedAnalysis(content) {
-            const contentLower = content.toLowerCase()
-                .replace(/[^\wа-я\s]/gi, ' ')
-                .replace(/\s+/g, ' ')
-                .trim();
-            const results = [];
-            const recommendations = [];
-            let criticalIssues = 0;
-            let highIssues = 0;
-            let passedCount = 0;
-            COMPLIANCE_CHECKS.forEach(check => {
-                let matches = 0;
-                const totalKeywords = check.keywords.length;
-                check.keywords.forEach(keyword => {
-                    const keywordLower = keyword.toLowerCase().replace(/[^\wа-я\s]/gi, ' ');
-                    const patterns = [
-                        new RegExp('\\b' + keywordLower.replace(/\s+/g, '\\s+') + '\\b', 'gi'),
-                        new RegExp(keywordLower.replace(/\s+/g, '.*?'), 'gi')
-                    ];
-                    if (patterns.some(pattern => pattern.test(contentLower))) {
-                        matches++;
-                    }
-                });
-                let threshold = 0.3;
-                if (check.priority === 'critical') threshold = 0.5;
-                else if (check.priority === 'high') threshold = 0.4;
-                else if (check.priority === 'medium') threshold = 0.3;
-                else threshold = 0.2;
-                const matchRatio = matches / totalKeywords;
-                const passed = matchRatio >= threshold;
-                if (passed) {
-                    passedCount++;
-                } else {
-                    if (check.priority === 'critical') criticalIssues++;
-                    else if (check.priority === 'high') highIssues++;
-                    recommendations.push({
-                        title: check.title,
-                        description: check.description,
-                        lawRef: check.lawRef,
-                        penalty: check.penalty,
-                        recommendation: check.recommendation,
-                        priority: check.priority
-                    });
-                }
-                results.push({
-                    ...check,
-                    passed,
-                    matches,
-                    totalKeywords,
-                    matchRatio: Math.round(matchRatio * 100)
-                });
-            });
-            const totalChecks = COMPLIANCE_CHECKS.length;
-            const score = Math.round((passedCount / totalChecks) * 100);
-            let riskLevel = 'low';
-            if (criticalIssues >= 3 || score < 40) riskLevel = 'critical';
-            else if (criticalIssues >= 1 || highIssues >= 3 || score < 70) riskLevel = 'high';
-            else if (highIssues >= 1 || score < 85) riskLevel = 'medium';
-            return {
-                score,
-                results,
-                recommendations,
-                criticalIssues,
-                highIssues,
-                passedCount,
-                totalChecks,
-                riskLevel
-            };
-        }
-        // Display results
-        function displayResults() {
-            const {score, results, recommendations, riskLevel, passedCount, totalChecks} = analysisData;
-            const scoreEl = document.getElementById('scoreValue');
-            const circleEl = document.getElementById('scoreCircle');
-            const titleEl = document.getElementById('scoreTitle');
-            const descEl = document.getElementById('scoreDesc');
-            const riskEl = document.getElementById('riskIndicator');
-            scoreEl.textContent = score + '%';
-            if (score >= 85) {
-                circleEl.className = 'w-16 h-16 rounded-full flex items-center justify-center text-white font-bold bg-green-500';
-                titleEl.textContent = 'Высокий уровень соответствия';
-                descEl.textContent = `Выполнено ${passedCount} из ${totalChecks} требований`;
-            } else if (score >= 70) {
-                circleEl.className = 'w-16 h-16 rounded-full flex items-center justify-center text-white font-bold bg-yellow-500';
-                titleEl.textContent = 'Требуются доработки';
-                descEl.textContent = `Выполнено ${passedCount} из ${totalChecks} требований`;
-            } else {
-                circleEl.className = 'w-16 h-16 rounded-full flex items-center justify-center text-white font-bold bg-red-500';
-                titleEl.textContent = 'Серьёзные нарушения';
-                descEl.textContent = `Выполнено ${passedCount} из ${totalChecks} требований`;
-            }
-            const riskTexts = {
-                'critical': 'КРИТИЧЕСКИЙ РИСК',
-                'high': 'ВЫСОКИЙ РИСК',
-                'medium': 'СРЕДНИЙ РИСК',
-                'low': 'НИЗКИЙ РИСК'
-            };
-            const riskColors = {
-                'critical': 'bg-red-500 text-white',
-                'high': 'bg-orange-500 text-white',
-                'medium': 'bg-yellow-500 text-white',
-                'low': 'bg-green-500 text-white'
-            };
-            riskEl.textContent = riskTexts[riskLevel];
-            riskEl.className = `px-3 py-1 rounded-lg font-semibold text-sm ${riskColors[riskLevel]}`;
-            const checksContainer = document.getElementById('checksContainer');
-            checksContainer.innerHTML = '';
-            results.forEach(result => {
-                const item = document.createElement('div');
-                item.className = `result-item p-3 rounded-lg ${result.passed ? 'success' : result.priority === 'critical' ? 'error' : 'warning'}`;
-                const statusIcon = result.passed ? '✓' : '✗';
-                const statusClass = result.passed ? 'status-success' : result.priority === 'critical' ? 'status-error' : 'status-warning';
-                const priorityText = {
-                    'critical': 'КРИТИЧНО',
-                    'high': 'ВАЖНО',
-                    'medium': 'СРЕДНЕ',
-                    'low': 'НИЗКО'
-                }[result.priority];
-                item.innerHTML = `
-                    <div class="flex items-start gap-3">
-                        <div class="${statusClass} status-icon">${statusIcon}</div>
-                        <div class="flex-1">
-                            <div class="flex items-center gap-2 mb-1">
-                                <h4 class="font-semibold text-gray-900 text-sm">${result.title}</h4>
-                                <span class="text-xs px-2 py-1 rounded-full bg-gray-200 text-gray-700">${priorityText}</span>
-                            </div>
-                            <p class="text-gray-700 text-sm mb-1">${result.description}</p>
-                            <p class="text-blue-600 text-xs">${result.lawRef}</p>
-                            ${!result.passed ? `<p class="text-red-600 text-xs font-medium mt-1">Возможный штраф: ${result.penalty}</p>` : ''}
-                            <p class="text-gray-500 text-xs mt-1">Совпадений: ${result.matches}/${result.totalKeywords} (${result.matchRatio}%)</p>
-                        </div>
-                    </div>
-                `;
-                checksContainer.appendChild(item);
-            });
-            const recList = document.getElementById('recList');
-            recList.innerHTML = '';
-            if (recommendations.length > 0) {
-                recommendations.forEach(rec => {
-                    const recDiv = document.createElement('div');
-                    recDiv.className = 'bg-gray-50 p-3 rounded-lg border border-gray-200';
-                    const priorityColor = rec.priority === 'critical' ? 'text-red-600' : 
-                                        rec.priority === 'high' ? 'text-orange-600' : 'text-yellow-600';
-                    recDiv.innerHTML = `
-                        <h5 class="font-semibold text-gray-900 mb-2 ${priorityColor} text-sm">${rec.title}</h5>
-                        <p class="text-gray-700 text-sm mb-2">${rec.description}</p>
-                        <p class="text-blue-600 text-sm mb-2"><strong>Правовое основание:</strong> ${rec.lawRef}</p>
-                        <p class="text-gray-900 text-sm mb-2"><strong>Что делать:</strong> ${rec.recommendation}</p>
-                        <p class="text-red-600 text-sm font-medium"><strong>Возможный штраф:</strong> ${rec.penalty}</p>
-                    `;
-                    recList.appendChild(recDiv);
-                });
-            } else {
-                recList.innerHTML = '<div class="bg-green-50 p-3 rounded-lg border border-green-200"><p class="text-green-800 font-medium">Критических нарушений не обнаружено</p><p class="text-green-700 text-sm">Политика соответствует основным требованиям 152-ФЗ.</p></div>';
-            }
-            document.getElementById('results').classList.remove('hidden');
-        }
-        // Download report with correct encoding
-        function downloadReport(format) {
-            if (!analysisData) return showAlert('Сначала проведите проверку');
-            const reportText = generateDetailedReport();
-            if (format === 'txt') {
-                downloadAsText(reportText, 'otchet_o_problemakh_politiki.txt');
-            } else if (format === 'html') {
-                downloadAsHtml(reportText, 'otchet_o_problemakh_politiki.html');
-            }
-            showAlert('Отчет скачан', 'success');
-        }
-        function downloadAsText(content, filename) {
-            const BOM = '\uFEFF';
-            const blob = new Blob([BOM + content], {type: 'text/plain;charset=utf-8'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-        function downloadAsHtml(content, filename) {
-            const htmlContent = `
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <meta charset=\"UTF-8\">
-                    <title>Отчёт о проверке политики конфиденциальности</title>
-                    <style>
-                        body { font-family: 'Times New Roman', serif; line-height: 1.6; margin: 2cm; }
-                        h1, h2, h3 { color: #333; }
-                        .critical { color: #dc2626; font-weight: bold; }
-                        .important { color: #ea580c; font-weight: bold; }
-                        .normal { color: #059669; }
-                    </style>
-                </head>
-                <body>
-                    ${content.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}
-                </body>
-                </html>
-            `;
-            const blob = new Blob(['\ufeff', htmlContent], {
-                type: 'text/html;charset=utf-8'
-            });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-        function generateDetailedReport() {
-            const reportDate = new Date().toLocaleString('ru-RU');
-            const {score, results, recommendations, criticalIssues, riskLevel} = analysisData;
-            let report = `ОТЧЁТ О ПРОВЕРКЕ ПОЛИТИКИ КОНФИДЕНЦИАЛЬНОСТИ\nДата: ${reportDate}\nОбщий балл: ${score}%\nУровень риска: ${riskLevel.toUpperCase()}\n\nВЫЯВЛЕННЫЕ ПРОБЛЕМЫ:\n`;
-            let problemCount = 1;
-            results.filter(r => !r.passed).forEach(result => {
-                const priorityText = result.priority === 'critical' ? 'КРИТИЧНО' : 
-                                  result.priority === 'high' ? 'ВАЖНО' : 'СРЕДНЕ';
-                report += `\n${problemCount}. **${result.title}** (${priorityText})\n   Описание: ${result.description}\n   Правовое основание: ${result.lawRef}\n   Возможный штраф: ${result.penalty}\n   Совпадений: ${result.matches}/${result.totalKeywords} (${result.matchRatio}%)\n   \n`;
-                problemCount++;
-            });
-            if (recommendations.length > 0) {
-                report += `\nРЕКОМЕНДАЦИИ:\n`;
-                recommendations.forEach((rec, index) => {
-                    const priorityMarker = rec.priority === 'critical' ? '🚨 ' : 
-                                         rec.priority === 'high' ? '⚠️ ' : '📋 ';
-                    report += `\n${index + 1}. ${priorityMarker}**${rec.title}**\n   ${rec.recommendation}\n   \n   Правовое основание: ${rec.lawRef}\n   Возможные последствия: ${rec.penalty}\n   \n`;
-                });
-            }
-            report += `\nКРИТИЧЕСКИЕ ТРЕБОВАНИЯ НА 2025 ГОД:\n- С 01.07.2025: Обязательная локализация данных граждан РФ (штраф до 18 млн руб.)\n- С 01.09.2025: Согласие должно быть отдельным документом (штраф до 15 млн руб.)\n- С 30.05.2025: Уведомление Роскомнадзора об инцидентах в течение 24 часов\n\nВАЖНО: Данный отчёт носит информационный характер и не заменяет юридическую консультацию.\nРекомендуется обратиться к специалистам по защите персональных данных для детальной правовой оценки и подготовки документов.\n\nОтчёт сгенерирован автоматизированной системой проверки соответствия 152-ФЗ.\n`;
-            return report;
-        }
-    </script>
-</body>
-</html>
+            // Новый строгий анализ: ищем явные разделы и данные
+            const contentLower = content.toLowerCase().replace(/[^
