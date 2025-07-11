@@ -82,35 +82,25 @@
         .status-success { background: #10b981; color: white; }
         .status-warning { background: #f59e0b; color: white; }
         .status-error { background: #ef4444; color: white; }
+
+        .scrollable-section {
+            max-height: 350px;
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen text-gray-800">
-
-    <!-- Авторизация -->
-    <div class="auth-overlay" id="authOverlay">
-        <div class="bg-white p-8 rounded-xl shadow-2xl max-w-md w-full mx-4">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">🔒 Доступ к проверке</h2>
-            <p class="text-gray-600 mb-6 text-center">Введите пароль для доступа к сервису</p>
-            <input type="password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-2" 
-                   id="authPassword" placeholder="Пароль" autocomplete="current-password">
-            <div id="capsLockWarning" class="text-xs text-yellow-600 mb-2 hidden">Внимание: включён CapsLock</div>
-            <div id="authError" class="text-xs text-red-600 mb-2 hidden"></div>
-            <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors mb-2" 
-                    onclick="authenticate()">Войти</button>
-        </div>
-    </div>
+    <a href="main.html" class="inline-flex items-center text-blue-600 hover:underline font-medium mt-4 ml-4">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+        На главную
+    </a>
 
     <!-- Основное приложение -->
-    <div id="mainApp" class="hidden">
+    <div id="mainApp">
         <div class="container mx-auto max-w-4xl px-4 py-6">
             
             <!-- Заголовок -->
             <header class="text-center mb-6">
-                <div class="flex justify-end mb-4">
-                    <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm transition-colors">
-                        Выйти
-                    </button>
-                </div>
                 <h1 class="text-2xl font-bold text-gray-900 mb-2">
                     🛡️ Проверка политики конфиденциальности
                 </h1>
@@ -209,7 +199,7 @@
                     </button>
                     <div id="detailedResultsContent" class="collapsible-content">
                         <div class="p-4 border-t border-gray-200">
-                            <div id="checksContainer" class="space-y-2"></div>
+                            <div id="checksContainer" class="space-y-2 scrollable-section"></div>
                         </div>
                     </div>
                 </div>
@@ -223,7 +213,7 @@
                     </button>
                     <div id="recommendationsContent" class="collapsible-content">
                         <div class="p-4 border-t border-gray-200">
-                            <div id="recList" class="space-y-3"></div>
+                            <div id="recList" class="space-y-3 scrollable-section"></div>
                         </div>
                     </div>
                 </div>
@@ -278,10 +268,21 @@
                     </p>
                 </div>
             </div>
+
+            <!-- Блок о проекте и мониторинге -->
+            <div class="bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl shadow-md border border-blue-200 mb-8 p-6 flex flex-col sm:flex-row items-center justify-between gap-6">
+                <div class="flex-1">
+                    <h2 class="text-xl font-bold text-blue-900 mb-2">🔔 Мониторинг изменений законодательства</h2>
+                    <p class="text-gray-700 mb-3">Следите за последними изменениями в законах о персональных данных и ФЗ-152. Получайте автоматические уведомления о важных нововведениях и требованиях!</p>
+                    <a href="monitor.html" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-5 rounded-lg transition-colors shadow">Перейти к мониторингу</a>
+                </div>
+                <div class="flex-shrink-0">
+                    <svg width="80" height="80" fill="none" viewBox="0 0 80 80"><circle cx="40" cy="40" r="38" fill="#6366F1" fill-opacity="0.1"/><path d="M40 22a18 18 0 0 1 18 18v7.5l2.7 5.4A2 2 0 0 1 58.9 56H21.1a2 2 0 0 1-1.8-3.1l2.7-5.4V40A18 18 0 0 1 40 22Zm0 32a6 6 0 0 0 6-6H34a6 6 0 0 0 6 6Z" fill="#6366F1"/></svg>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- СКРИПТЫ: перемещено в самый конец -->
     <script>
     // Compliance checks for Russian Federal Law 152-FZ (2025)
     const COMPLIANCE_CHECKS = [
@@ -293,8 +294,8 @@
             required: true,
             priority: 'medium',
             lawRef: 'Ст. 18.1 152-ФЗ',
-            penalty: 'до 300 000 руб.',
-            recommendation: 'Добавьте раздел "Общие положения" с описанием принципов законности, справедливости и добросовестности обработки персональных данных согласно ст. 18.1 152-ФЗ.'
+            penalty: 'до 300 000 руб. (ст. 13.11 КоАП РФ)',
+            recommendation: 'Добавьте раздел с принципами обработки персональных данных.'
         },
         {
             id: 'operator_details',
@@ -304,8 +305,8 @@
             required: true,
             priority: 'critical',
             lawRef: 'п.1 ч.1 ст.18.1 152-ФЗ',
-            penalty: 'до 300 000 руб.',
-            recommendation: 'КРИТИЧНО: Укажите полное наименование организации, ОГРН, ИНН и юридический адрес оператора персональных данных.'
+            penalty: 'до 300 000 руб. (ст. 13.11 КоАП РФ)',
+            recommendation: 'Укажите наименование, ОГРН, ИНН и юридический адрес оператора.'
         },
         {
             id: 'contact_info',
@@ -315,8 +316,8 @@
             required: true,
             priority: 'high',
             lawRef: 'п.8 ч.1 ст.18.1 152-ФЗ',
-            penalty: 'до 300 000 руб.',
-            recommendation: 'Укажите контактные данные ответственного за обработку персональных данных (email, телефон).'
+            penalty: 'до 300 000 руб. (ст. 13.11 КоАП РФ)',
+            recommendation: 'Укажите email и телефон ответственного.'
         },
         {
             id: 'legal_grounds',
@@ -326,8 +327,8 @@
             required: true,
             priority: 'critical',
             lawRef: 'Ст.6 152-ФЗ',
-            penalty: 'до 15 млн руб.',
-            recommendation: 'КРИТИЧНО: Укажите правовые основания обработки с отсылкой к пункту 1 (согласие), пункту 5 (договор), пункту 6 (законные интересы) части 1 статьи 6 152-ФЗ.'
+            penalty: 'до 15 000 000 руб. (ч.7 ст. 13.11 КоАП РФ)',
+            recommendation: 'Укажите правовые основания обработки с отсылкой к статье 6 152-ФЗ.'
         },
         {
             id: 'processing_purposes',
@@ -337,8 +338,8 @@
             required: true,
             priority: 'critical',
             lawRef: 'п.3 ч.1 ст.18.1 152-ФЗ',
-            penalty: 'до 15 млн руб.',
-            recommendation: 'КРИТИЧНО: Укажите цели обработки для каждой категории персональных данных.'
+            penalty: 'до 15 000 000 руб. (ч.7 ст. 13.11 КоАП РФ)',
+            recommendation: 'Укажите цели обработки для каждой категории данных.'
         },
         {
             id: 'data_categories',
@@ -348,8 +349,8 @@
             required: true,
             priority: 'high',
             lawRef: 'п.4 ч.1 ст.18.1 152-ФЗ',
-            penalty: 'до 10 млн руб.',
-            recommendation: 'Перечислите все категории обрабатываемых персональных данных.'
+            penalty: 'до 10 000 000 руб. (ч.6 ст. 13.11 КоАП РФ)',
+            recommendation: 'Перечислите все категории собираемых данных.'
         },
         {
             id: 'subject_categories',
@@ -359,8 +360,8 @@
             required: true,
             priority: 'medium',
             lawRef: 'п.4 ч.1 ст.18.1 152-ФЗ',
-            penalty: 'до 5 млн руб.',
-            recommendation: 'Перечислите все категории субъектов персональных данных: клиенты, пользователи, сотрудники и т.д.'
+            penalty: 'до 5 000 000 руб. (ч.6 ст. 13.11 КоАП РФ)',
+            recommendation: 'Перечислите категории субъектов: клиенты, пользователи, сотрудники и т.д.'
         },
         {
             id: 'retention_periods',
@@ -370,8 +371,8 @@
             required: true,
             priority: 'critical',
             lawRef: 'п.6 ч.1 ст.18.1 152-ФЗ',
-            penalty: 'до 15 млн руб.',
-            recommendation: 'КРИТИЧНО: Установите конкретные сроки хранения для каждой категории персональных данных.'
+            penalty: 'до 15 000 000 руб. (ч.7 ст. 13.11 КоАП РФ)',
+            recommendation: 'Установите сроки хранения для каждой категории данных.'
         },
         {
             id: 'subject_rights',
@@ -381,8 +382,8 @@
             required: true,
             priority: 'critical',
             lawRef: 'Ст.14 152-ФЗ',
-            penalty: 'до 10 млн руб.',
-            recommendation: 'КРИТИЧНО: Опишите все права субъектов персональных данных и порядок их реализации.'
+            penalty: 'до 10 000 000 руб. (ч.6 ст. 13.11 КоАП РФ)',
+            recommendation: 'Опишите права субъектов и порядок их реализации.'
         },
         {
             id: 'response_timeframe',
@@ -392,8 +393,8 @@
             required: true,
             priority: 'high',
             lawRef: 'ч.4 ст.14 152-ФЗ',
-            penalty: 'до 5 млн руб.',
-            recommendation: 'Укажите срок ответа на запросы субъектов данных — не более 30 дней.'
+            penalty: 'до 5 000 000 руб. (ч.6 ст. 13.11 КоАП РФ)',
+            recommendation: 'Укажите срок ответа на запросы — не более 30 дней.'
         },
         {
             id: 'security_measures',
@@ -403,41 +404,19 @@
             required: true,
             priority: 'critical',
             lawRef: 'Ст.19 152-ФЗ',
-            penalty: 'до 15 млн руб.',
-            recommendation: 'КРИТИЧНО: Опишите организационные и технические меры по защите персональных данных.'
+            penalty: 'до 15 000 000 руб. (ч.7 ст. 13.11 КоАП РФ)',
+            recommendation: 'Опишите организационные и технические меры защиты.'
         },
         {
             id: 'localization_2025',
-            title: 'ЛОКАЛИЗАЦИЯ ДАННЫХ (с 01.07.2025)',
+            title: 'Локализация данных (2025)',
             description: 'Обработка и хранение данных только в России',
             keywords: ['территория россии', 'российская федерация', 'локализация', 'серверы в россии', 'хранение в россии', 'обработка в россии'],
             required: true,
             priority: 'critical',
             lawRef: 'ч.5 ст.18 152-ФЗ (с 01.07.2025)',
-            penalty: 'до 18 млн руб.',
-            recommendation: '🚨 КРИТИЧНО: С 01.07.2025 все персональные данные граждан РФ должны обрабатываться только в России.'
-        },
-        {
-            id: 'separate_consent_2025',
-            title: 'ОТДЕЛЬНОЕ СОГЛАСИЕ (с 01.09.2025)',
-            description: 'Согласие должно быть отдельным документом',
-            keywords: ['отдельное согласие', 'отдельный документ', 'независимо от договора', 'отдельно', 'самостоятельно'],
-            required: true,
-            priority: 'critical',
-            lawRef: 'ч.4 ст.9 152-ФЗ (с 01.09.2025)',
-            penalty: 'до 15 млн руб.',
-            recommendation: '🚨 КРИТИЧНО: С 01.09.2025 согласие должно быть отдельным документом.'
-        },
-        {
-            id: 'incident_notification',
-            title: 'Уведомление об инцидентах',
-            description: 'Порядок уведомления Роскомнадзора о нарушениях',
-            keywords: ['инцидент', '24 часа', 'утечка данных', 'роскомнадзор', 'уведомление', 'нарушение безопасности', 'сообщить'],
-            required: true,
-            priority: 'critical',
-            lawRef: 'ч.6 ст.21 152-ФЗ (с 30.05.2025)',
-            penalty: 'до 20 млн руб.',
-            recommendation: 'КРИТИЧНО: Укажите обязанность уведомлять Роскомнадзор об инцидентах в течение 24 часов.'
+            penalty: 'до 18 000 000 руб. (ч.8 ст. 13.11 КоАП РФ, с 01.07.2025)',
+            recommendation: 'Добавьте раздел о локализации данных в России.'
         },
         {
             id: 'registry_notification',
@@ -447,8 +426,8 @@
             required: true,
             priority: 'critical',
             lawRef: 'Ст.22 152-ФЗ',
-            penalty: 'до 300 000 руб.',
-            recommendation: 'КРИТИЧНО: Подайте уведомление в Роскомнадзор о начале обработки персональных данных.'
+            penalty: 'до 300 000 руб. (ст. 19.7 КоАП РФ)',
+            recommendation: 'Подайте уведомление в Роскомнадзор.'
         }
     ];
     let analysisData = null;
@@ -456,59 +435,6 @@
     const PASSWORD_HASH = '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4'; // SHA-256 для '1234'
     let authAttempts = parseInt(localStorage.getItem('privacy_audit_attempts') || '0');
     let authBlockedUntil = parseInt(localStorage.getItem('privacy_audit_blocked_until') || '0');
-    function checkAuth() {
-        const isAuthenticated = localStorage.getItem('privacy_audit_auth') === 'true';
-        if (isAuthenticated) {
-            document.getElementById('authOverlay').style.display = 'none';
-            document.getElementById('mainApp').classList.remove('hidden');
-        } else {
-            document.getElementById('authOverlay').style.display = 'flex';
-            document.getElementById('mainApp').classList.add('hidden');
-        }
-    }
-    function authenticate() {
-        const now = Date.now();
-        if (authBlockedUntil && now < authBlockedUntil) {
-            showAuthError('Слишком много попыток. Повторите через ' + Math.ceil((authBlockedUntil - now)/1000) + ' сек.');
-            return;
-        }
-        const password = document.getElementById('authPassword').value;
-        const hash = CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex);
-        if (hash === PASSWORD_HASH) {
-            localStorage.setItem('privacy_audit_auth', 'true');
-            authAttempts = 0;
-            localStorage.setItem('privacy_audit_attempts', '0');
-            checkAuth();
-            document.getElementById('authPassword').value = '';
-            hideAuthError();
-        } else {
-            authAttempts++;
-            localStorage.setItem('privacy_audit_attempts', authAttempts.toString());
-            if (authAttempts >= 3) {
-                authBlockedUntil = Date.now() + 60000;
-                localStorage.setItem('privacy_audit_blocked_until', authBlockedUntil.toString());
-                showAuthError('Слишком много попыток. Повторите через 60 сек.');
-            } else {
-                showAuthError('Неверный пароль. Осталось попыток: ' + (3 - authAttempts));
-            }
-            document.getElementById('authPassword').value = '';
-        }
-    }
-    window.authenticate = authenticate;
-    function showAuthError(msg) {
-        const el = document.getElementById('authError');
-        el.textContent = msg;
-        el.classList.remove('hidden');
-    }
-    function hideAuthError() {
-        const el = document.getElementById('authError');
-        el.textContent = '';
-        el.classList.add('hidden');
-    }
-    function logout() {
-        localStorage.removeItem('privacy_audit_auth');
-        checkAuth();
-    }
     // CapsLock indicator
     document.addEventListener('DOMContentLoaded', () => {
         const passInput = document.getElementById('authPassword');
@@ -555,7 +481,6 @@
                 clearResults();
             });
         });
-        checkAuth();
         document.getElementById('authPassword').addEventListener('keypress', e => {
             if (e.key === 'Enter') authenticate();
         });
@@ -683,4 +608,467 @@
     // Improved analysis function
     function performImprovedAnalysis(content) {
         // Новый строгий анализ: ищем явные разделы и данные
-        const contentLower = content.toLowerCase().replace(/[^
+        const contentLower = content.toLowerCase().replace(/[^a-zа-яё0-9\s]/gi, ' ').replace(/\s+/g, ' ').trim();
+        let results = [];
+        let recommendations = [];
+        let criticalIssues = 0;
+        let highIssues = 0;
+        let passedCount = 0;
+
+        // Проверка наличия даты обновления
+        const datePattern = /(обновлен[а-я]*|дата изменения|дата публикации|дата утверждения)[^\d]*(\d{2,4}[\.\/-]\d{1,2}[\.\/-]\d{2,4})/i;
+        const hasDate = datePattern.test(content);
+        results.push({
+            id: 'update_date',
+            title: 'Дата обновления политики',
+            description: 'В политике должна быть явно указана дата последнего обновления или утверждения.',
+            lawRef: 'Рекомендация Роскомнадзора',
+            penalty: 'Риск недействительности документа (рекомендация Роскомнадзора)',
+            passed: hasDate,
+            matches: hasDate ? 1 : 0,
+            totalKeywords: 1,
+            matchRatio: hasDate ? 100 : 0,
+            priority: 'high',
+        });
+        if (!hasDate) {
+            highIssues++;
+            recommendations.push({
+                title: 'Дата обновления политики',
+                description: 'В политике отсутствует дата последнего обновления.',
+                lawRef: 'Рекомендация Роскомнадзора',
+                penalty: 'Риск недействительности документа (рекомендация Роскомнадзора)',
+                recommendation: 'Добавьте дату последнего обновления или утверждения политики.',
+                priority: 'high',
+            });
+        } else {
+            passedCount++;
+        }
+
+        // Проверка наличия email, телефона, адреса
+        const emailPattern = /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i;
+        const phonePattern = /(\+7|8)[\s\-\(]?(\d{3})[\)\-\s]?(\d{3})[\-\s]?(\d{2})[\-\s]?(\d{2})/;
+        const addressPattern = /(г\.|город|ул\.|улица|проспект|дом|офис|адрес)/i;
+        const hasEmail = emailPattern.test(content);
+        const hasPhone = phonePattern.test(content);
+        const hasAddress = addressPattern.test(content);
+        const contactsPassed = hasEmail && hasPhone && hasAddress;
+        results.push({
+            id: 'contacts_explicit',
+            title: 'Явные контактные данные',
+            description: 'В политике должны быть явно указаны email, телефон и адрес.',
+            lawRef: 'п.8 ч.1 ст.18.1 152-ФЗ',
+            penalty: 'до 300 000 руб. (ст. 13.11 КоАП РФ)',
+            passed: contactsPassed,
+            matches: [hasEmail, hasPhone, hasAddress].filter(Boolean).length,
+            totalKeywords: 3,
+            matchRatio: Math.round([hasEmail, hasPhone, hasAddress].filter(Boolean).length / 3 * 100),
+            priority: 'critical',
+        });
+        if (!contactsPassed) {
+            criticalIssues++;
+            recommendations.push({
+                title: 'Контактные данные',
+                description: 'В политике отсутствует email, телефон или адрес.',
+                lawRef: 'п.8 ч.1 ст.18.1 152-ФЗ',
+                penalty: 'до 300 000 руб. (ст. 13.11 КоАП РФ)',
+                recommendation: 'Укажите email, телефон и юридический адрес для связи по вопросам персональных данных.',
+                priority: 'critical',
+            });
+        } else {
+            passedCount++;
+        }
+
+        // Проверка наличия новых требований 2025 года
+        const localization2025 = /(локализац|сервер[а-я]* в россии|хранени[ея] в россии|обработк[аеи] в россии|территори[яи] россии|российская федерация)/i.test(content);
+        const separateConsent2025 = /(отдельн[а-я]* согласие|отдельн[а-я]* документ|независимо от договора|самостоятельн[а-я]*)/i.test(content);
+        const incidentNotification2025 = /(инцидент|24 час|утечк[аеи]|роскомнадзор|уведомлени[ея] об инцидент|нарушени[ея] безопасност|сообщить)/i.test(content);
+        if (!localization2025) {
+            criticalIssues++;
+            recommendations.push({
+                title: 'Локализация данных (2025)',
+                description: 'Нет упоминания о хранении и обработке данных только в России.',
+                lawRef: 'ч.5 ст.18 152-ФЗ (с 01.07.2025)',
+                penalty: 'до 18 000 000 руб. (ч.8 ст. 13.11 КоАП РФ, с 01.07.2025)',
+                recommendation: 'Добавьте раздел о локализации данных граждан РФ на территории России.',
+                priority: 'critical',
+            });
+        } else {
+            passedCount++;
+        }
+        if (!incidentNotification2025) {
+            criticalIssues++;
+            recommendations.push({
+                title: 'Уведомление об инцидентах (2025)',
+                description: 'Нет информации о порядке уведомления Роскомнадзора об инцидентах.',
+                lawRef: 'ч.6 ст.21 152-ФЗ (с 30.05.2025)',
+                penalty: 'до 20 000 000 руб. (ч.11 ст. 13.11 КоАП РФ, с 30.05.2025)',
+                recommendation: 'Добавьте обязанность уведомлять Роскомнадзор об инцидентах в течение 24 часов.',
+                priority: 'critical',
+            });
+        } else {
+            passedCount++;
+        }
+
+        // Проверка структуры: наличие обязательных разделов (по заголовкам)
+        const requiredSections = [
+            {id: 'general_provisions', title: 'Общие положения', example: 'Настоящее Пользовательское соглашение (далее по тексту — Соглашение) является публичной офертой и определяет условия использования Пользователями материалов и сервисов, размещенных на сайте в сети Интернет по адресу www.example.ru (далее — Сайт), в мобильном приложении (далее — мобильное приложение), в Интерактивном Киоске. Сайт, мобильное приложение, Интерактивный Киоск являются собственностью ООО "Компания" (ОГРН ХХХХХХХХ, ИНН ХХХХХХХХ) и созданы в целях знакомства потенциального покупателя с ООО "Компания", с ассортиментом продукции, для повышения потребительского спроса на товары, и предоставляют возможность совершить покупку. Настоящее Соглашение действует в отношении всей информации, которую ООО "Компания" (ОГРН ХХХХХХХХ) может получить о Пользователе во время использования им Сайта, мобильного приложения, Интерактивного Киоска, сервисов, служб, программ для ЭВМ (далее — Сервисы). Все существующие на данный момент Сервисы, а также любое их развитие и/или добавление новых являются предметом настоящего Соглашения.'},
+            {id: 'operator_details', title: 'Сведения об операторе', example: 'ООО "Компания", ОГРН ХХХХХХХХ, ИНН ХХХХХХХХ, юридический адрес: ХХХХХХХХ.'},
+            {id: 'legal_grounds', title: 'Правовые основания обработки', example: 'Обработка персональных данных осуществляется на основании ст. 6 Федерального закона № 152-ФЗ, а также на основании согласия субъекта персональных данных.'},
+            {id: 'processing_purposes', title: 'Цели обработки данных', example: 'Персональные данные обрабатываются для предоставления доступа к сервисам, оформления и исполнения заказов, обратной связи, участия в программах лояльности, маркетинговых рассылках, а также для выполнения требований законодательства РФ.'},
+            {id: 'data_categories', title: 'Категории обрабатываемых данных', example: 'Фамилия, имя, отчество, контактные данные (телефон, email), адрес доставки, история заказов, сведения о платежах.'},
+            {id: 'subject_rights', title: 'Права субъектов данных', example: 'Пользователь имеет право на получение информации о своих персональных данных, их исправление, удаление, отзыв согласия, ограничение обработки, а также на подачу жалобы в Роскомнадзор.'},
+            {id: 'retention_periods', title: 'Сроки хранения данных', example: 'Персональные данные хранятся в течение срока действия договора, а также в течение срока, установленного законодательством РФ.'},
+            {id: 'security_measures', title: 'Меры по обеспечению безопасности', example: 'Оператор принимает необходимые и достаточные организационные и технические меры для защиты персональных данных от неправомерного или случайного доступа, уничтожения, изменения, блокирования, копирования, распространения, а также от иных неправомерных действий.'},
+            {id: 'registry_notification', title: 'Уведомление Роскомнадзора', example: 'Оператор уведомляет Роскомнадзор о начале обработки персональных данных в порядке, установленном законодательством РФ.'},
+            {id: 'localization_2025', title: 'Локализация данных (2025)', example: 'В политике рекомендуется явно указать: "Обработка и хранение персональных данных граждан Российской Федерации осуществляется исключительно на территории Российской Федерации в соответствии с требованиями законодательства РФ."'}
+        ];
+        requiredSections.forEach(section => {
+            const found = new RegExp(section.title, 'i').test(content);
+            results.push({
+                id: section.id,
+                title: section.title,
+                description: `Наличие раздела "${section.title}"`,
+                lawRef: (() => {
+                    switch(section.id) {
+                        case 'general_provisions': return 'Ст. 18.1 152-ФЗ';
+                        case 'operator_details': return 'п.1 ч.1 ст.18.1 152-ФЗ';
+                        case 'legal_grounds': return 'Ст.6 152-ФЗ';
+                        case 'processing_purposes': return 'п.3 ч.1 ст.18.1 152-ФЗ';
+                        case 'data_categories': return 'п.4 ч.1 ст.18.1 152-ФЗ';
+                        case 'subject_rights': return 'Ст.14 152-ФЗ';
+                        case 'retention_periods': return 'п.6 ч.1 ст.18.1 152-ФЗ';
+                        case 'security_measures': return 'Ст.19 152-ФЗ';
+                        case 'registry_notification': return 'Ст.22 152-ФЗ';
+                        case 'localization_2025': return 'ч.5 ст.18 152-ФЗ (с 01.07.2025)';
+                        default: return '152-ФЗ';
+                    }
+                })(),
+                penalty: (() => {
+                    switch(section.id) {
+                        case 'general_provisions': return 'до 300 000 руб. (ст. 13.11 КоАП РФ)';
+                        case 'operator_details': return 'до 300 000 руб. (ст. 13.11 КоАП РФ)';
+                        case 'legal_grounds': return 'до 15 000 000 руб. (ч.7 ст. 13.11 КоАП РФ)';
+                        case 'processing_purposes': return 'до 15 000 000 руб. (ч.7 ст. 13.11 КоАП РФ)';
+                        case 'data_categories': return 'до 10 000 000 руб. (ч.6 ст. 13.11 КоАП РФ)';
+                        case 'subject_rights': return 'до 10 000 000 руб. (ч.6 ст. 13.11 КоАП РФ)';
+                        case 'retention_periods': return 'до 15 000 000 руб. (ч.7 ст. 13.11 КоАП РФ)';
+                        case 'security_measures': return 'до 15 000 000 руб. (ч.7 ст. 13.11 КоАП РФ)';
+                        case 'registry_notification': return 'до 300 000 руб. (ст. 19.7 КоАП РФ)';
+                        case 'localization_2025': return 'до 18 000 000 руб. (ч.8 ст. 13.11 КоАП РФ, с 01.07.2025)';
+                        default: return 'до 300 000 руб. (ст. 13.11 КоАП РФ)';
+                    }
+                })(),
+                passed: found,
+                matches: found ? 1 : 0,
+                totalKeywords: 1,
+                matchRatio: found ? 100 : 0,
+                priority: 'high',
+            });
+            if (!found) {
+                highIssues++;
+                recommendations.push({
+                    title: section.title,
+                    description: `В политике отсутствует раздел "${section.title}"`,
+                    lawRef: (() => {
+                        switch(section.id) {
+                            case 'general_provisions': return 'Ст. 18.1 152-ФЗ';
+                            case 'operator_details': return 'п.1 ч.1 ст.18.1 152-ФЗ';
+                            case 'legal_grounds': return 'Ст.6 152-ФЗ';
+                            case 'processing_purposes': return 'п.3 ч.1 ст.18.1 152-ФЗ';
+                            case 'data_categories': return 'п.4 ч.1 ст.18.1 152-ФЗ';
+                            case 'subject_rights': return 'Ст.14 152-ФЗ';
+                            case 'retention_periods': return 'п.6 ч.1 ст.18.1 152-ФЗ';
+                            case 'security_measures': return 'Ст.19 152-ФЗ';
+                            case 'registry_notification': return 'Ст.22 152-ФЗ';
+                            case 'localization_2025': return 'ч.5 ст.18 152-ФЗ (с 01.07.2025)';
+                            default: return '152-ФЗ';
+                        }
+                    })(),
+                    penalty: (() => {
+                        switch(section.id) {
+                            case 'general_provisions': return 'до 300 000 руб. (ст. 13.11 КоАП РФ)';
+                            case 'operator_details': return 'до 300 000 руб. (ст. 13.11 КоАП РФ)';
+                            case 'legal_grounds': return 'до 15 000 000 руб. (ч.7 ст. 13.11 КоАП РФ)';
+                            case 'processing_purposes': return 'до 15 000 000 руб. (ч.7 ст. 13.11 КоАП РФ)';
+                            case 'data_categories': return 'до 10 000 000 руб. (ч.6 ст. 13.11 КоАП РФ)';
+                            case 'subject_rights': return 'до 10 000 000 руб. (ч.6 ст. 13.11 КоАП РФ)';
+                            case 'retention_periods': return 'до 15 000 000 руб. (ч.7 ст. 13.11 КоАП РФ)';
+                            case 'security_measures': return 'до 15 000 000 руб. (ч.7 ст. 13.11 КоАП РФ)';
+                            case 'registry_notification': return 'до 300 000 руб. (ст. 19.7 КоАП РФ)';
+                            case 'localization_2025': return 'до 18 000 000 руб. (ч.8 ст. 13.11 КоАП РФ, с 01.07.2025)';
+                            default: return 'до 300 000 руб. (ст. 13.11 КоАП РФ)';
+                        }
+                    })(),
+                    recommendation: `Добавьте отдельный раздел "${section.title}" в политику конфиденциальности. Пример формулировки: ${section.example}`,
+                    priority: 'high',
+                });
+            } else {
+                passedCount++;
+            }
+        });
+
+        // Старый анализ по ключевым словам (оставляем для полноты)
+        COMPLIANCE_CHECKS.forEach(check => {
+            let matches = 0;
+            const totalKeywords = check.keywords.length;
+            check.keywords.forEach(keyword => {
+                const keywordLower = keyword.toLowerCase().replace(/[^a-zа-яё0-9\s]/gi, ' ');
+                const patterns = [
+                    new RegExp('\\b' + keywordLower.replace(/\s+/g, '\\s+') + '\\b', 'gi'),
+                    new RegExp(keywordLower.replace(/\s+/g, '.*?'), 'gi')
+                ];
+                if (patterns.some(pattern => pattern.test(contentLower))) {
+                    matches++;
+                }
+            });
+            let threshold = 0.3;
+            if (check.priority === 'critical') threshold = 0.5;
+            else if (check.priority === 'high') threshold = 0.4;
+            else if (check.priority === 'medium') threshold = 0.3;
+            else threshold = 0.2;
+            const matchRatio = matches / totalKeywords;
+            const passed = matchRatio >= threshold;
+            if (passed) {
+                passedCount++;
+            } else {
+                if (check.priority === 'critical') criticalIssues++;
+                else if (check.priority === 'high') highIssues++;
+                recommendations.push({
+                    title: check.title,
+                    description: check.description,
+                    lawRef: check.lawRef,
+                    penalty: check.penalty,
+                    recommendation: check.recommendation,
+                    priority: check.priority,
+                    id: check.id
+                });
+            }
+            results.push({
+                ...check,
+                passed,
+                matches,
+                totalKeywords,
+                matchRatio: Math.round(matchRatio * 100)
+            });
+        });
+        // Удаляем дубли по id (оставляем первый найденный)
+        const uniqueResults = [];
+        const seenResultIds = new Set();
+        for (const r of results) {
+            if (!seenResultIds.has(r.id)) {
+                uniqueResults.push(r);
+                seenResultIds.add(r.id);
+            }
+        }
+        results = uniqueResults;
+        // Удаляем дубли по нормализованному title (строго, без учёта регистра и пробелов)
+        const recObj = {};
+        for (const rec of recommendations) {
+            const key = rec.title ? rec.title.replace(/\s+/g, '').toLowerCase() : '';
+            if (key && !recObj[key]) {
+                recObj[key] = rec;
+            }
+        }
+        recommendations = Object.values(recObj);
+        const totalChecks = results.length;
+        const score = Math.round((passedCount / totalChecks) * 100);
+        let riskLevel = 'low';
+        if (criticalIssues >= 3 || score < 40) riskLevel = 'critical';
+        else if (criticalIssues >= 1 || highIssues >= 3 || score < 70) riskLevel = 'high';
+        else if (highIssues >= 1 || score < 85) riskLevel = 'medium';
+        return {
+            score,
+            results,
+            recommendations,
+            criticalIssues,
+            highIssues,
+            passedCount,
+            totalChecks,
+            riskLevel
+        };
+    }
+    // Display results
+    function displayResults() {
+        const {score, results, recommendations, riskLevel, passedCount, totalChecks} = analysisData;
+        const scoreEl = document.getElementById('scoreValue');
+        const circleEl = document.getElementById('scoreCircle');
+        const titleEl = document.getElementById('scoreTitle');
+        const descEl = document.getElementById('scoreDesc');
+        const riskEl = document.getElementById('riskIndicator');
+        scoreEl.textContent = score + '%';
+        if (score >= 85) {
+            circleEl.className = 'w-16 h-16 rounded-full flex items-center justify-center text-white font-bold bg-green-500';
+            titleEl.textContent = 'Высокий уровень соответствия';
+            descEl.textContent = `Выполнено ${passedCount} из ${totalChecks} требований`;
+        } else if (score >= 70) {
+            circleEl.className = 'w-16 h-16 rounded-full flex items-center justify-center text-white font-bold bg-yellow-500';
+            titleEl.textContent = 'Требуются доработки';
+            descEl.textContent = `Выполнено ${passedCount} из ${totalChecks} требований`;
+        } else {
+            circleEl.className = 'w-16 h-16 rounded-full flex items-center justify-center text-white font-bold bg-red-500';
+            titleEl.textContent = 'Серьёзные нарушения';
+            descEl.textContent = `Выполнено ${passedCount} из ${totalChecks} требований`;
+        }
+        const riskTexts = {
+            'critical': 'КРИТИЧЕСКИЙ РИСК',
+            'high': 'ВЫСОКИЙ РИСК',
+            'medium': 'СРЕДНИЙ РИСК',
+            'low': 'НИЗКИЙ РИСК'
+        };
+        const riskColors = {
+            'critical': 'bg-red-500 text-white',
+            'high': 'bg-orange-500 text-white',
+            'medium': 'bg-yellow-500 text-white',
+            'low': 'bg-green-500 text-white'
+        };
+        riskEl.textContent = riskTexts[riskLevel];
+        riskEl.className = `px-3 py-1 rounded-lg font-semibold text-sm ${riskColors[riskLevel]}`;
+        const checksContainer = document.getElementById('checksContainer');
+        checksContainer.innerHTML = '';
+        results.forEach(result => {
+            const item = document.createElement('div');
+            item.className = `result-item p-3 rounded-lg ${result.passed ? 'success' : result.priority === 'critical' ? 'error' : 'warning'}`;
+            const statusIcon = result.passed ? '✓' : '✗';
+            const statusClass = result.passed ? 'status-success' : result.priority === 'critical' ? 'status-error' : 'status-warning';
+            let matchInfo = '';
+            if (result.id !== 'localization_2025') {
+                matchInfo = `<p class="text-gray-500 text-xs mt-1">Совпадений: ${result.matches}/${result.totalKeywords} (${result.matchRatio}%)</p>`;
+            }
+            // penalty compact
+            let penaltyText = result.penalty && result.penalty.trim() ? result.penalty : 'до 300 000 руб. (ст. 13.11 КоАП РФ)';
+            item.innerHTML = `
+                <div class="flex items-start gap-3">
+                    <div class="${statusClass} status-icon">${statusIcon}</div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <h4 class="font-semibold text-gray-900 text-sm">${result.title}</h4>
+                        </div>
+                        <p class="text-gray-700 text-sm mb-1">${result.description}</p>
+                        <p class="text-blue-600 text-xs">${result.lawRef}</p>
+                        ${!result.passed ? `<p class="text-red-600 text-xs font-medium mt-1">Возможный штраф: ${penaltyText}</p>` : ''}
+                        ${matchInfo}
+                    </div>
+                </div>
+            `;
+            checksContainer.appendChild(item);
+        });
+        const recList = document.getElementById('recList');
+        recList.innerHTML = '';
+        if (recommendations.length > 0) {
+            recommendations.forEach(rec => {
+                const recDiv = document.createElement('div');
+                recDiv.className = 'bg-gray-50 p-3 rounded-lg border border-gray-200';
+                let penaltyText = rec.penalty && rec.penalty.trim() ? rec.penalty : 'до 300 000 руб. (ст. 13.11 КоАП РФ)';
+                recDiv.innerHTML = `
+                    <h5 class="font-semibold text-gray-900 mb-2 text-sm">${rec.title}</h5>
+                    <p class="text-gray-900 text-sm mb-2"><strong>Что делать:</strong> ${rec.recommendation}</p>
+                    <p class="text-blue-600 text-sm mb-2"><strong>Правовое основание:</strong> ${rec.lawRef}</p>
+                    <p class="text-red-600 text-sm font-medium"><strong>Возможный штраф:</strong> ${penaltyText}</p>
+                `;
+                recList.appendChild(recDiv);
+            });
+        } else {
+            recList.innerHTML = '<div class="bg-green-50 p-3 rounded-lg border border-green-200"><p class="text-green-800 font-medium">Критических нарушений не обнаружено</p><p class="text-green-700 text-sm">Политика соответствует основным требованиям 152-ФЗ.</p></div>';
+        }
+        document.getElementById('results').classList.remove('hidden');
+    }
+    // Download report with correct encoding
+    function downloadReport(format) {
+        if (!analysisData) return showAlert('Сначала проведите проверку');
+        const reportText = generateDetailedReport();
+        if (format === 'txt') {
+            downloadAsText(reportText, 'otchet_o_problemakh_politiki.txt');
+        } else if (format === 'html') {
+            downloadAsHtml(reportText, 'otchet_o_problemakh_politiki.html');
+        }
+        showAlert('Отчет скачан', 'success');
+    }
+    function downloadAsText(content, filename) {
+        const BOM = '\uFEFF';
+        const blob = new Blob([BOM + content], {type: 'text/plain;charset=utf-8'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+    function downloadAsHtml(content, filename) {
+        const htmlContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>Отчёт о проверке политики конфиденциальности</title>
+                <style>
+                    body { font-family: 'Times New Roman', serif; line-height: 1.6; margin: 2cm; }
+                    h1, h2, h3 { color: #333; }
+                    .critical { color: #dc2626; font-weight: bold; }
+                    .important { color: #ea580c; font-weight: bold; }
+                    .normal { color: #059669; }
+                </style>
+            </head>
+            <body>
+                ${content.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}
+            </body>
+            </html>
+        `;
+        const blob = new Blob(['\ufeff', htmlContent], {
+            type: 'text/html;charset=utf-8'
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+    function generateDetailedReport() {
+        const reportDate = new Date().toLocaleString('ru-RU');
+        const {score, results, recommendations, criticalIssues, riskLevel} = analysisData;
+        let report = `ОТЧЁТ О ПРОВЕРКЕ ПОЛИТИКИ КОНФИДЕНЦИАЛЬНОСТИ\nДата формирования: ${reportDate}\n\nОбщий балл соответствия: ${score}%\nУровень риска: ${riskLevel.toUpperCase()}\n\nВЫЯВЛЕННЫЕ НАРУШЕНИЯ:`;
+        let problemCount = 1;
+        // Удаляем дубли по id (оставляем первый найденный)
+        const uniqueResults = [];
+        const seenResultIds = new Set();
+        for (const r of results) {
+            if (!r.passed && !seenResultIds.has(r.id)) {
+                uniqueResults.push(r);
+                seenResultIds.add(r.id);
+            }
+        }
+        uniqueResults.forEach(result => {
+            let penaltyText = result.penalty && result.penalty.trim() ? result.penalty : 'до 300 000 руб. (ст. 13.11 КоАП РФ)';
+            report += `\n${problemCount}. ${result.title}\n   Описание: ${result.description}\n   Правовое основание: ${result.lawRef}\n   Возможный штраф: ${penaltyText}`;
+            if (result.id !== 'localization_2025') {
+                report += `\n   Совпадений: ${result.matches}/${result.totalKeywords} (${result.matchRatio}%)`;
+            }
+            report += `\n`;
+            problemCount++;
+        });
+        // Удаляем дубли по нормализованному title (строго, без учёта регистра и пробелов)
+        const recObj = {};
+        for (const rec of recommendations) {
+            const key = rec.title ? rec.title.replace(/\s+/g, '').toLowerCase() : '';
+            if (key && !recObj[key]) {
+                recObj[key] = rec;
+            }
+        }
+        const uniqueRecs = Object.values(recObj);
+        if (uniqueRecs.length > 0) {
+            report += `\nРЕКОМЕНДАЦИИ:`;
+            uniqueRecs.forEach((rec, index) => {
+                let penaltyText = rec.penalty && rec.penalty.trim() ? rec.penalty : 'до 300 000 руб. (ст. 13.11 КоАП РФ)';
+                report += `\n${index + 1}. ${rec.title}\n   ${rec.recommendation}\n   Правовое основание: ${rec.lawRef}\n   Возможные последствия: ${penaltyText}\n`;
+            });
+        }
+        report += `\n\nКРИТИЧЕСКИЕ ТРЕБОВАНИЯ НА 2025 ГОД:\n- С 01.07.2025: Обязательная локализация данных граждан РФ (штраф до 18 млн руб.)\n- С 30.05.2025: Уведомление Роскомнадзора об инцидентах в течение 24 часов\n\nДанный отчёт носит информационный характер и не заменяет юридическую консультацию. Рекомендуется обратиться к специалистам по защите персональных данных для детальной правовой оценки и подготовки документов.\n\nОтчёт сгенерирован автоматизированной системой проверки соответствия 152-ФЗ.`;
+        return report;
+    }
+    </script>
+</body>
+</html>
