@@ -40,6 +40,7 @@
             --table-row-even-bg: #f9f9f9;
             --advice-bg: var(--highlight-success);
             --advice-text: #fff;
+            --scenario-card-bg: #f5f5f5;
         }
 
         /* Dark Theme */
@@ -74,6 +75,7 @@
             --table-row-even-bg: #404040;
             --advice-bg: #3c9d64;
             --advice-text: #e0e0e0;
+            --scenario-card-bg: #4a4a4a;
         }
 
         body {
@@ -451,7 +453,7 @@
 
         .tooltip-text {
             visibility: hidden;
-            width: 260px;
+            width: 280px; /* Increased width for more text */
             background-color: #444;
             color: #fff;
             text-align: center;
@@ -461,7 +463,7 @@
             z-index: 1;
             bottom: 125%;
             left: 50%;
-            margin-left: -130px;
+            margin-left: -140px; /* Adjust margin-left based on new width */
             opacity: 0;
             transition: opacity 0.3s;
             font-size: 0.85em;
@@ -626,6 +628,46 @@
             margin-bottom: 0;
         }
 
+        /* Saved Scenarios Table */
+        .saved-scenarios-section {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px dashed var(--border-color);
+            transition: border-color 0.3s ease;
+            display: none; /* Hidden by default */
+        }
+
+        .saved-scenarios-section h3 {
+            text-align: center;
+        }
+
+        .saved-scenarios-section table {
+            margin-top: 20px;
+        }
+
+        .saved-scenarios-section table button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease;
+        }
+
+        .saved-scenarios-section table button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .saved-scenarios-table-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .saved-scenarios-table-container table {
+            min-width: 700px;
+        }
 
         /* Responsive adjustments */
         @media (max-width: 768px) {
@@ -676,13 +718,18 @@
                 display: block;
                 width: 100%;
             }
+            .tooltip-text {
+                width: 200px;
+                margin-left: -100px;
+                font-size: 0.8em;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <button class="theme-toggle" id="themeToggle">Переключить тему</button>
-        <h1>Инструмент для  сравнения Финансирования</h1>
+        <h1>Инструмент для сравнения Финансирования</h1>
         <p>Сравните общую переплату по различным вариантам финансирования техники и примите взвешенное решение.</p>
 
         <div class="input-group">
@@ -694,7 +741,7 @@
         </div>
         <div class="input-group">
             <label for="currencySelect">Валюта:
-                <span class="tooltip-icon" aria-label="Выберите валюту для отображения результатов. Курс обновляется автоматически.">&#9432;<span class="tooltip-text">Выберите валюту для отображения результатов. Курс обновляется автоматически.</span></span>
+                <span class="tooltip-icon" aria-label="Выберите валюту для отображения результатов. Курс обновляется автоматически для удобства, но для точных финансовых операций всегда используйте актуальный курс вашего банка.">&#9432;<span class="tooltip-text">Выберите валюту для отображения результатов. Курс обновляется автоматически для удобства, но для точных финансовых операций всегда используйте актуальный курс вашего банка.</span></span>
             </label>
             <select id="currencySelect" onchange="fetchExchangeRates(); updateCurrencyDisplays();">
                 <option value="RUB">Рубли (RUB)</option>
@@ -716,7 +763,7 @@
             <div class="input-section">
                 <div class="input-group">
                     <label for="leasingTerm">Срок лизинга (месяцы):
-                        <span class="tooltip-icon" aria-label="Общий срок, на который заключается договор лизинга.">&#9432;<span class="tooltip-text">Общий срок, на который заключается договор лизинга.</span></span>
+                        <span class="tooltip-icon" aria-label="Общий срок, на который заключается договор лизинга. Чем дольше срок, тем ниже ежемесячный платеж, но выше общая переплата.">&#9432;<span class="tooltip-text">Общий срок, на который заключается договор лизинга. Чем дольше срок, тем ниже ежемесячный платеж, но выше общая переплата.</span></span>
                     </label>
                     <input type="number" id="leasingTerm" value="36" min="1" max="120" placeholder="Например, 36" oninput="validateInput(this); updateSliderAndDisplay('leasingTermSlider', this.value);">
                     <div class="slider-wrapper">
@@ -726,7 +773,7 @@
                 </div>
                 <div class="input-group">
                     <label for="initialPaymentLeasing">Первоначальный взнос по лизингу (%):
-                        <span class="tooltip-icon" aria-label="Часть стоимости техники, которую вы вносите сразу.">&#9432;<span class="tooltip-text">Часть стоимости техники, которую вы вносите сразу.</span></span>
+                        <span class="tooltip-icon" aria-label="Часть стоимости техники, которую вы вносите сразу. Чем выше взнос, тем меньше сумма финансирования и общая переплата.">&#9432;<span class="tooltip-text">Часть стоимости техники, которую вы вносите сразу. Чем выше взнос, тем меньше сумма финансирования и общая переплата.</span></span>
                     </label>
                     <input type="number" id="initialPaymentLeasing" value="10" min="0" max="100" placeholder="Например, 10" oninput="validateInput(this); updateInitialPaymentSums(); updateSliderAndDisplay('initialPaymentLeasingSlider', this.value);">
                     <div class="slider-wrapper">
@@ -737,7 +784,7 @@
                 </div>
                 <div class="input-group">
                     <label for="leasingRate">Удорожание по лизингу (% годовых):
-                        <span class="tooltip-icon" aria-label="Годовая ставка, определяющая общую переплату по лизинговому договору.">&#9432;<span class="tooltip-text">Годовая ставка, определяющая общую переплату по лизинговому договору.</span></span>
+                        <span class="tooltip-icon" aria-label="Годовая ставка, определяющая общую переплату по лизинговому договору. Включает в себя прибыль лизингодателя и другие расходы.">&#9432;<span class="tooltip-text">Годовая ставка, определяющая общую переплату по лизинговому договору. Включает в себя прибыль лизингодателя и другие расходы.</span></span>
                     </label>
                     <input type="number" id="leasingRate" value="7" min="0" max="50" step="0.1" placeholder="Например, 7" oninput="validateInput(this); updateSliderAndDisplay('leasingRateSlider', this.value);">
                     <div class="slider-wrapper">
@@ -747,12 +794,29 @@
                 </div>
                 <div class="input-group">
                     <label for="leasingVatIncluded">НДС включен в удорожание?
-                        <span class="tooltip-icon" aria-label="Определяет, как НДС учитывается в расчете переплаты. Для юрлиц НДС часто подлежит возмещению.">&#9432;<span class="tooltip-text">Определяет, как НДС учитывается в расчете переплаты. Для юрлиц НДС часто подлежит возмещению.</span></span>
+                        <span class="tooltip-icon" aria-label="Определяет, как НДС учитывается в расчете переплаты. Для юридических лиц НДС по лизинговым платежам часто подлежит возмещению, что снижает реальные расходы.">&#9432;<span class="tooltip-text">Определяет, как НДС учитывается в расчете переплаты. Для юридических лиц НДС по лизинговым платежам часто подлежит возмещению, что снижает реальные расходы.</span></span>
                     </label>
                     <select id="leasingVatIncluded" onchange="updateCurrencyDisplays();">
                         <option value="yes">Да</option>
                         <option value="no">Нет</option>
                     </select>
+                    <div class="input-sub-info"></div>
+                </div>
+                 <div class="input-group">
+                    <label for="buyoutPriceLeasing">Выкупная стоимость (% от цены техники):
+                        <span class="tooltip-icon" aria-label="Остаточная стоимость техники, которую вы должны заплатить лизинговой компании в конце срока лизинга, чтобы приобрести ее в собственность. Может быть как символической, так и значительной.">&#9432;<span class="tooltip-text">Остаточная стоимость техники, которую вы должны заплатить лизинговой компании в конце срока лизинга, чтобы приобрести ее в собственность. Может быть как символической, так и значительной.</span></span>
+                    </label>
+                    <input type="number" id="buyoutPriceLeasing" value="1" min="0" max="100" step="0.1" placeholder="Например, 1" oninput="validateInput(this); updateSliderAndDisplay('buyoutPriceLeasingSlider', this.value);">
+                    <div class="slider-wrapper">
+                        <input type="range" id="buyoutPriceLeasingSlider" min="0" max="100" value="1" step="0.1" oninput="updateNumberInputAndDisplay('buyoutPriceLeasing', this.value); validateInput(document.getElementById('buyoutPriceLeasing'));">
+                    </div>
+                    <div class="slider-value-display" id="buyoutPriceLeasingValue">1.0%</div>
+                </div>
+                 <div class="input-group">
+                    <label for="annualInsuranceLeasing">Ежегодная стоимость страховки (<span id="currencySymbolLeasingInsurance">₽</span>):
+                        <span class="tooltip-icon" aria-label="Обязательная страховка (КАСКО/ОСАГО), которую часто требуют лизинговые компании. Добавляется к общей переплате.">&#9432;<span class="tooltip-text">Обязательная страховка (КАСКО/ОСАГО), которую часто требуют лизинговые компании. Добавляется к общей переплате.</span></span>
+                    </label>
+                    <input type="number" id="annualInsuranceLeasing" value="0" min="0" placeholder="Например, 50 000" oninput="validateInput(this); updateCurrencyDisplays();">
                     <div class="input-sub-info"></div>
                 </div>
             </div>
@@ -763,7 +827,7 @@
             <div class="input-section">
                 <div class="input-group">
                     <label for="creditTerm">Срок кредита (месяцы):
-                        <span class="tooltip-icon" aria-label="Общий срок, на который вы берете банковский кредит.">&#9432;<span class="tooltip-text">Общий срок, на который вы берете банковский кредит.</span></span>
+                        <span class="tooltip-icon" aria-label="Общий срок, на который вы берете банковский кредит. Более длительный срок уменьшает ежемесячные платежи, но увеличивает общую сумму процентов.">&#9432;<span class="tooltip-text">Общий срок, на который вы берете банковский кредит. Более длительный срок уменьшает ежемесячные платежи, но увеличивает общую сумму процентов.</span></span>
                     </label>
                     <input type="number" id="creditTerm" value="60" min="1" max="120" placeholder="Например, 60" oninput="validateInput(this); updateSliderAndDisplay('creditTermSlider', this.value);">
                     <div class="slider-wrapper">
@@ -773,7 +837,7 @@
                 </div>
                 <div class="input-group">
                     <label for="initialPaymentCredit">Первоначальный взнос по кредиту (%):
-                        <span class="tooltip-icon" aria-label="Процент от стоимости техники, вносимый вами сразу при оформлении кредита.">&#9432;<span class="tooltip-text">Процент от стоимости техники, вносимый вами сразу при оформлении кредита.</span></span>
+                        <span class="tooltip-icon" aria-label="Процент от стоимости техники, вносимый вами сразу при оформлении кредита. Уменьшает сумму основного долга по кредиту.">&#9432;<span class="tooltip-text">Процент от стоимости техники, вносимый вами сразу при оформлении кредита. Уменьшает сумму основного долга по кредиту.</span></span>
                     </label>
                     <input type="number" id="initialPaymentCredit" value="20" min="0" max="100" placeholder="Например, 20" oninput="validateInput(this); updateInitialPaymentSums(); updateSliderAndDisplay('initialPaymentCreditSlider', this.value);">
                     <div class="slider-wrapper">
@@ -784,7 +848,7 @@
                 </div>
                 <div class="input-group">
                     <label for="creditRate">Процентная ставка по кредиту (% годовых):
-                        <span class="tooltip-icon" aria-label="Годовая процентная ставка банка по кредиту.">&#9432;<span class="tooltip-text">Годовая процентная ставка банка по кредиту.</span></span>
+                        <span class="tooltip-icon" aria-label="Годовая процентная ставка банка по кредиту. Основной параметр, определяющий размер ежемесячных платежей и общую переплату.">&#9432;<span class="tooltip-text">Годовая процентная ставка банка по кредиту. Основной параметр, определяющий размер ежемесячных платежей и общую переплату.</span></span>
                     </label>
                     <input type="number" id="creditRate" value="15" min="0" max="50" step="0.1" placeholder="Например, 15" oninput="validateInput(this); updateSliderAndDisplay('creditRateSlider', this.value);">
                     <div class="slider-wrapper">
@@ -800,7 +864,7 @@
             <div class="input-section">
                 <div class="input-group">
                     <label for="loanTerm">Срок займа (месяцы):
-                        <span class="tooltip-icon" aria-label="Общий срок, на который вы берете займ.">&#9432;<span class="tooltip-text">Общий срок, на который вы берете займ.</span></span>
+                        <span class="tooltip-icon" aria-label="Общий срок, на который вы берете займ. Займы обычно предоставляются на более короткие сроки, чем кредиты.">&#9432;<span class="tooltip-text">Общий срок, на который вы берете займ. Займы обычно предоставляются на более короткие сроки, чем кредиты.</span></span>
                     </label>
                     <input type="number" id="loanTerm" value="24" min="1" max="60" placeholder="Например, 24" oninput="validateInput(this); updateSliderAndDisplay('loanTermSlider', this.value);">
                     <div class="slider-wrapper">
@@ -810,7 +874,7 @@
                 </div>
                 <div class="input-group">
                     <label for="loanRate">Процентная ставка по займу (% годовых):
-                        <span class="tooltip-icon" aria-label="Годовая процентная ставка по займу.">&#9432;<span class="tooltip-text">Годовая процентная ставка по займу.</span></span>
+                        <span class="tooltip-icon" aria-label="Годовая процентная ставка по займу. Займы, особенно от небанковских организаций, могут иметь значительно более высокую ставку.">&#9432;<span class="tooltip-text">Годовая процентная ставка по займу. Займы, особенно от небанковских организаций, могут иметь значительно более высокую ставку.</span></span>
                     </label>
                     <input type="number" id="loanRate" value="25" min="0" max="100" step="0.1" placeholder="Например, 25" oninput="validateInput(this); updateSliderAndDisplay('loanRateSlider', this.value);">
                     <div class="slider-wrapper">
@@ -826,6 +890,8 @@
                 Рассчитать
                 <div class="spinner" id="spinner"></div>
             </button>
+            <button class="action-button" onclick="saveCurrentScenario()">Сохранить сценарий</button>
+            <button class="action-button" onclick="showSavedScenarios()">Показать сохраненные сценарии</button>
             <button class="action-button" onclick="resetToDefaults()">Сбросить к значениям по умолчанию</button>
         </div>
 
@@ -845,7 +911,7 @@
                                 <th>Переплата (% от стоимости техники)</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="summaryComparisonBody">
                             <tr>
                                 <td>Лизинг</td>
                                 <td id="compLeasingOverpayment"></td>
@@ -873,7 +939,9 @@
                     <li>Сумма финансирования: <strong></strong></li>
                     <li>Расчетная ежемесячная переплата (без учета НДС): <strong></strong></li>
                     <li>Общая сумма удорожания (без учета НДС): <strong></strong></li>
-                    <li>Итоговая переплата (с учетом НДС, если применимо): <strong></strong></li>
+                    <li>Общая стоимость страховки за весь срок: <strong></strong></li>
+                    <li>Сумма выкупной стоимости: <strong></strong></li>
+                    <li>Итоговая переплата (с учетом НДС, выкупной стоимости и страховки): <strong></strong></li>
                 </ul>
 
                 <h4>Детализация кредита</h4>
@@ -898,6 +966,27 @@
                 <p id="adviceText"></p>
             </div>
         </div>
+
+        <div class="saved-scenarios-section" id="savedScenariosSection">
+            <h2>Сохраненные сценарии</h2>
+            <div class="saved-scenarios-table-container">
+                <table id="savedScenariosTable">
+                    <thead>
+                        <tr>
+                            <th>Название сценария</th>
+                            <th>Лизинг (<span id="currencySymbolLeasingSaved">₽</span>)</th>
+                            <th>Кредит (<span id="currencySymbolCreditSaved">₽</span>)</th>
+                            <th>Займ (<span id="currencySymbolLoanSaved">₽</span>)</th>
+                            <th>Лучший вариант</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+            <p id="noScenariosMessage" style="text-align: center; margin-top: 20px; color: var(--secondary-color);">Нет сохраненных сценариев.</p>
+        </div>
     </div>
 
     <script>
@@ -920,12 +1009,16 @@
             initialPaymentLeasing: 10,
             leasingRate: 7,
             leasingVatIncluded: 'yes',
+            buyoutPriceLeasing: 1,
+            annualInsuranceLeasing: 0,
             creditTerm: 60,
             initialPaymentCredit: 20,
             creditRate: 15,
             loanTerm: 24,
             loanRate: 25
         };
+
+        let savedScenarios = JSON.parse(localStorage.getItem('savedScenarios')) || [];
 
         // --- Currency and Formatting Functions ---
         async function fetchExchangeRates() {
@@ -999,6 +1092,8 @@
             if (document.getElementById('resultsSection').style.display === 'block') {
                  calculateComparison();
             }
+            // Re-render saved scenarios with new currency
+            renderSavedScenarios();
         }
 
         // --- Input and Slider Synchronization ---
@@ -1011,7 +1106,7 @@
             if (displayElement) {
                 if (sliderId.includes('Term')) {
                     displayElement.textContent = `${value} месяцев`;
-                } else if (sliderId.includes('Rate') || sliderId.includes('Payment')) {
+                } else if (sliderId.includes('Rate') || sliderId.includes('Payment') || sliderId.includes('Price') && sliderId.includes('Leasing')) { // For Buyout Price
                     displayElement.textContent = `${parseFloat(value).toFixed(1)}%`;
                 }
             }
@@ -1031,7 +1126,7 @@
             if (displayElement) {
                 if (numberInputId.includes('Term')) {
                     displayElement.textContent = `${value} месяцев`;
-                } else if (numberInputId.includes('Rate') || numberInputId.includes('Payment')) {
+                } else if (numberInputId.includes('Rate') || numberInputId.includes('Payment') || numberInputId.includes('Price') && numberInputId.includes('Leasing')) { // For Buyout Price
                     displayElement.textContent = `${parseFloat(value).toFixed(1)}%`;
                 }
             }
@@ -1127,11 +1222,13 @@
             const spinner = document.getElementById('spinner');
             const resultsSection = document.getElementById('resultsSection');
             const errorMessageElement = document.getElementById('errorMessage');
+            const savedScenariosSection = document.getElementById('savedScenariosSection');
 
             if (!validateAllInputs()) {
                 errorMessageElement.textContent = 'Пожалуйста, исправьте ошибки во введённых данных.';
                 errorMessageElement.style.display = 'block';
                 resultsSection.style.display = 'none';
+                savedScenariosSection.style.display = 'none'; // Hide saved scenarios on error
                 return;
             }
 
@@ -1139,11 +1236,13 @@
             calculateButton.disabled = true;
             resultsSection.style.display = 'none'; 
             errorMessageElement.style.display = 'none'; 
+            savedScenariosSection.style.display = 'none'; // Ensure it's hidden during calculation
 
             setTimeout(() => {
                 calculateComparison();
                 spinner.style.display = 'none';
                 calculateButton.disabled = false;
+                resultsSection.style.display = 'block';
             }, 500); 
         }
 
@@ -1155,6 +1254,8 @@
             const initialPaymentLeasingPercent = parseFloat(document.getElementById('initialPaymentLeasing').value);
             const leasingRate = parseFloat(document.getElementById('leasingRate').value);
             const leasingVatIncluded = document.getElementById('leasingVatIncluded').value === 'yes';
+            const buyoutPriceLeasingPercent = parseFloat(document.getElementById('buyoutPriceLeasing').value);
+            const annualInsuranceLeasing = parseFloat(document.getElementById('annualInsuranceLeasing').value);
 
             // Credit parameters
             const creditTermMonths = parseFloat(document.getElementById('creditTerm').value);
@@ -1168,24 +1269,23 @@
             // --- Leasing Calculation ---
             const initialPaymentLeasingSum = carPrice * (initialPaymentLeasingPercent / 100);
             const leasingFinancingAmount = carPrice - initialPaymentLeasingSum;
+            const buyoutPriceSum = carPrice * (buyoutPriceLeasingPercent / 100);
+            const totalInsuranceCost = annualInsuranceLeasing * (leasingTermMonths / 12);
             
             let totalLeasingOverpayment = 0;
             let monthlyLeasingOverpaymentRaw = 0; // Overpayment per month before VAT
             let totalLeasingOverpaymentRaw = 0; // Total overpayment before VAT
 
             if (leasingRate > 0) {
-                // Simplified leasing calculation: assume simple interest on financing amount for overpayment
                 totalLeasingOverpaymentRaw = leasingFinancingAmount * (leasingRate / 100) * (leasingTermMonths / 12);
-                
-                if (leasingVatIncluded) {
-                    totalLeasingOverpayment = totalLeasingOverpaymentRaw; // VAT is considered part of the rate
-                } else {
-                    totalLeasingOverpayment = totalLeasingOverpaymentRaw * 1.20; // Add 20% VAT
-                }
                 monthlyLeasingOverpaymentRaw = totalLeasingOverpaymentRaw / leasingTermMonths;
+            }
+
+            // Calculate final overpayment including VAT, buyout, and insurance
+            if (leasingVatIncluded) {
+                totalLeasingOverpayment = totalLeasingOverpaymentRaw + buyoutPriceSum + totalInsuranceCost;
             } else {
-                totalLeasingOverpayment = 0;
-                monthlyLeasingOverpaymentRaw = 0;
+                totalLeasingOverpayment = (totalLeasingOverpaymentRaw * 1.20) + buyoutPriceSum + totalInsuranceCost; // Add 20% VAT
             }
 
             const realLeasingPercentage = (totalLeasingOverpayment / carPrice) * 100;
@@ -1205,10 +1305,7 @@
             document.getElementById('compCreditPercentage').textContent = formatPercentage(realCreditPercentage);
 
             // --- Loan Calculation ---
-            // For simplicity, loan often covers full price, or a portion determined by loan terms not covered by initial payment.
-            // Here, we assume loan is for the full car price for comparison if no explicit loan initial payment.
-            // If the user expects to take a loan *after* an initial payment, adjust loanAmount calculation accordingly.
-            const loanAmount = carPrice; 
+            const loanAmount = carPrice; // Assuming loan is for the full car price for simplicity
             
             const loanMonthlyPayment = calculateAnnuityPayment(loanAmount, loanRate, loanTermMonths);
             const loanOverpayment = (loanMonthlyPayment * loanTermMonths) - loanAmount;
@@ -1253,11 +1350,12 @@
             calculationResults = {
                 leasing: {
                     financingAmount: leasingFinancingAmount,
-                    estimatedMonthlyOverpayment: monthlyLeasingOverpaymentRaw, // For transparency
+                    estimatedMonthlyOverpayment: monthlyLeasingOverpaymentRaw, 
                     totalOverpaymentRaw: totalLeasingOverpaymentRaw,
+                    totalInsuranceCost: totalInsuranceCost,
+                    buyoutPriceSum: buyoutPriceSum,
                     totalOverpaymentFinal: totalLeasingOverpayment,
-                    // Note: This totalPayments is simplified. For true leasing, it's more complex with residual value etc.
-                    totalPayments: leasingFinancingAmount + totalLeasingOverpayment 
+                    totalPayments: initialPaymentLeasingSum + totalLeasingOverpaymentRaw + buyoutPriceSum + totalInsuranceCost
                 },
                 credit: {
                     amount: creditAmount,
@@ -1275,7 +1373,6 @@
 
             updateCalculationDetails(); // Update the accordion content
             updateAdviceSection(); // Update the advice section
-            document.getElementById('resultsSection').style.display = 'block';
         }
 
         // --- Accordion Logic ---
@@ -1294,7 +1391,9 @@
             document.getElementById('leasingDetailsList').children[0].innerHTML = `Сумма финансирования: <strong>${formatCurrency(calculationResults.leasing.financingAmount)}</strong>`;
             document.getElementById('leasingDetailsList').children[1].innerHTML = `Расчетная ежемесячная переплата (без учета НДС): <strong>${formatCurrency(calculationResults.leasing.estimatedMonthlyOverpayment, true, 2)}</strong>`;
             document.getElementById('leasingDetailsList').children[2].innerHTML = `Общая сумма удорожания (без учета НДС): <strong>${formatCurrency(calculationResults.leasing.totalOverpaymentRaw)}</strong>`;
-            document.getElementById('leasingDetailsList').children[3].innerHTML = `Итоговая переплата (с учетом НДС, если применимо): <strong>${formatCurrency(calculationResults.leasing.totalOverpaymentFinal)}</strong>`;
+            document.getElementById('leasingDetailsList').children[3].innerHTML = `Общая стоимость страховки за весь срок: <strong>${formatCurrency(calculationResults.leasing.totalInsuranceCost)}</strong>`;
+            document.getElementById('leasingDetailsList').children[4].innerHTML = `Сумма выкупной стоимости: <strong>${formatCurrency(calculationResults.leasing.buyoutPriceSum)}</strong>`;
+            document.getElementById('leasingDetailsList').children[5].innerHTML = `Итоговая переплата (с учетом НДС, выкупной стоимости и страховки): <strong>${formatCurrency(calculationResults.leasing.totalOverpaymentFinal)}</strong>`;
 
             // Credit Details
             document.getElementById('creditDetailsList').children[0].innerHTML = `Сумма кредита: <strong>${formatCurrency(calculationResults.credit.amount)}</strong>`;
@@ -1353,7 +1452,7 @@
                 
                 // Add specific advice for each option
                 if (bestOption === 'Leasing') {
-                    adviceHtml += `<p>Лизинг часто выгоден для юридических лиц и ИП благодаря возможности получения налоговых преференций (например, возмещения НДС по лизинговым платежам и ускоренной амортизации), что может значительно снизить общие расходы. Однако он предполагает сохранение права собственности на предмет лизинга у лизинговой компании до полного погашения договора.</p>`;
+                    adviceHtml += `<p>Лизинг часто выгоден для юридических лиц и ИП благодаря возможности получения налоговых преференций (например, возмещения НДС по лизинговым платежам и ускоренной амортизации), что может значительно снизить общие расходы. Однако он предполагает сохранение права собственности на предмет лизинга у лизинговой компании до полного погашения договора, и важно учитывать выкупную стоимость и обязательную страховку, которые могут влиять на конечную переплату.</p>`;
                 } else if (bestOption === 'Credit') {
                     adviceHtml += `<p>Банковский кредит, как правило, предлагает более предсказуемые ежемесячные платежи и право собственности на технику сразу переходит к вам. Этот вариант может быть удобен, если у вас хорошая кредитная история и вы предпочитаете владеть активом с момента покупки. Однако процесс оформления может быть более длительным и требовать больше документов.</p>`;
                 } else if (bestOption === 'Loan') {
@@ -1370,6 +1469,154 @@
             adviceSection.style.display = 'block';
         }
 
+        // --- Saved Scenarios Logic ---
+        function saveCurrentScenario() {
+            if (!validateAllInputs()) {
+                document.getElementById('errorMessage').textContent = 'Невозможно сохранить сценарий: пожалуйста, исправьте ошибки во введённых данных.';
+                document.getElementById('errorMessage').style.display = 'block';
+                return;
+            }
+            document.getElementById('errorMessage').style.display = 'none';
+
+            let scenarioName = prompt("Введите название для этого сценария (например, 'Мой вариант лизинга с низким взносом'):");
+            if (!scenarioName) {
+                return; // User cancelled
+            }
+
+            // Ensure we have current calculation results before saving
+            calculateComparison(); 
+
+            const currentScenario = {
+                name: scenarioName,
+                carPrice: parseFloat(document.getElementById('carPrice').value),
+                currency: document.getElementById('currencySelect').value,
+                leasing: comparisonData.Leasing,
+                credit: comparisonData.Credit,
+                loan: comparisonData.Loan,
+                details: { // Save full input parameters for reloading
+                    leasingTerm: parseFloat(document.getElementById('leasingTerm').value),
+                    initialPaymentLeasing: parseFloat(document.getElementById('initialPaymentLeasing').value),
+                    leasingRate: parseFloat(document.getElementById('leasingRate').value),
+                    leasingVatIncluded: document.getElementById('leasingVatIncluded').value,
+                    buyoutPriceLeasing: parseFloat(document.getElementById('buyoutPriceLeasing').value),
+                    annualInsuranceLeasing: parseFloat(document.getElementById('annualInsuranceLeasing').value),
+                    creditTerm: parseFloat(document.getElementById('creditTerm').value),
+                    initialPaymentCredit: parseFloat(document.getElementById('initialPaymentCredit').value),
+                    creditRate: parseFloat(document.getElementById('creditRate').value),
+                    loanTerm: parseFloat(document.getElementById('loanTerm').value),
+                    loanRate: parseFloat(document.getElementById('loanRate').value)
+                }
+            };
+
+            savedScenarios.push(currentScenario);
+            localStorage.setItem('savedScenarios', JSON.stringify(savedScenarios));
+            renderSavedScenarios();
+            alert(`Сценарий "${scenarioName}" успешно сохранен!`);
+        }
+
+        function renderSavedScenarios() {
+            const tableBody = document.querySelector('#savedScenariosTable tbody');
+            tableBody.innerHTML = ''; // Clear existing rows
+            const noScenariosMessage = document.getElementById('noScenariosMessage');
+
+            if (savedScenarios.length === 0) {
+                noScenariosMessage.style.display = 'block';
+                return;
+            }
+            noScenariosMessage.style.display = 'none';
+
+            savedScenarios.forEach((scenario, index) => {
+                const row = tableBody.insertRow();
+                row.insertCell().textContent = scenario.name;
+                row.insertCell().textContent = formatCurrency(scenario.leasing.overpayment);
+                row.insertCell().textContent = formatCurrency(scenario.credit.overpayment);
+                row.insertCell().textContent = formatCurrency(scenario.loan.overpayment);
+
+                const options = [
+                    { type: 'Лизинг', overpayment: scenario.leasing.overpayment },
+                    { type: 'Кредит', overpayment: scenario.credit.overpayment },
+                    { type: 'Займ', overpayment: scenario.loan.overpayment }
+                ];
+                const bestOption = options.reduce((prev, curr) => prev.overpayment < curr.overpayment ? prev : curr);
+                row.insertCell().textContent = bestOption.type;
+
+                const actionsCell = row.insertCell();
+                const loadButton = document.createElement('button');
+                loadButton.textContent = 'Загрузить';
+                loadButton.onclick = () => loadScenario(index);
+                actionsCell.appendChild(loadButton);
+
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Удалить';
+                deleteButton.style.marginLeft = '10px';
+                deleteButton.style.backgroundColor = '#e74c3c';
+                deleteButton.style.color = '#fff';
+                deleteButton.onclick = () => deleteScenario(index);
+                actionsCell.appendChild(deleteButton);
+            });
+        }
+
+        function loadScenario(index) {
+            const scenario = savedScenarios[index];
+            if (!scenario) return;
+
+            // Load input values
+            document.getElementById('carPrice').value = scenario.carPrice;
+            document.getElementById('currencySelect').value = scenario.currency;
+
+            // Load leasing inputs
+            document.getElementById('leasingTerm').value = scenario.details.leasingTerm;
+            document.getElementById('initialPaymentLeasing').value = scenario.details.initialPaymentLeasing;
+            document.getElementById('leasingRate').value = scenario.details.leasingRate;
+            document.getElementById('leasingVatIncluded').value = scenario.details.leasingVatIncluded;
+            document.getElementById('buyoutPriceLeasing').value = scenario.details.buyoutPriceLeasing;
+            document.getElementById('annualInsuranceLeasing').value = scenario.details.annualInsuranceLeasing;
+
+            // Load credit inputs
+            document.getElementById('creditTerm').value = scenario.details.creditTerm;
+            document.getElementById('initialPaymentCredit').value = scenario.details.initialPaymentCredit;
+            document.getElementById('creditRate').value = scenario.details.creditRate;
+
+            // Load loan inputs
+            document.getElementById('loanTerm').value = scenario.details.loanTerm;
+            document.getElementById('loanRate').value = scenario.details.loanRate;
+
+            // Manually trigger updates for sliders and displays
+            updateSliderAndDisplay('leasingTermSlider', scenario.details.leasingTerm);
+            updateSliderAndDisplay('initialPaymentLeasingSlider', scenario.details.initialPaymentLeasing);
+            updateSliderAndDisplay('leasingRateSlider', scenario.details.leasingRate);
+            updateSliderAndDisplay('buyoutPriceLeasingSlider', scenario.details.buyoutPriceLeasing);
+
+            updateSliderAndDisplay('creditTermSlider', scenario.details.creditTerm);
+            updateSliderAndDisplay('initialPaymentCreditSlider', scenario.details.initialPaymentCredit);
+            updateSliderAndDisplay('creditRateSlider', scenario.details.creditRate);
+
+            updateSliderAndDisplay('loanTermSlider', scenario.details.loanTerm);
+            updateSliderAndDisplay('loanRateSlider', scenario.details.loanRate);
+
+            updateCurrencyDisplays(); // This will also call updateInitialPaymentSums and potentially recalculate/redisplay results
+
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('savedScenariosSection').style.display = 'none';
+            // Show the calculation results section after loading and re-calculating
+            handleCalculationClick(); // Re-calculate and display
+            alert(`Сценарий "${scenario.name}" загружен.`);
+        }
+
+        function deleteScenario(index) {
+            if (confirm(`Вы уверены, что хотите удалить сценарий "${savedScenarios[index].name}"?`)) {
+                savedScenarios.splice(index, 1);
+                localStorage.setItem('savedScenarios', JSON.stringify(savedScenarios));
+                renderSavedScenarios();
+            }
+        }
+
+        function showSavedScenarios() {
+            document.getElementById('resultsSection').style.display = 'none'; // Hide results
+            document.getElementById('errorMessage').style.display = 'none'; // Hide errors
+            document.getElementById('savedScenariosSection').style.display = 'block';
+            renderSavedScenarios();
+        }
 
         // --- Theme Toggle Logic ---
         document.getElementById('themeToggle').addEventListener('click', () => {
@@ -1388,8 +1635,14 @@
                 if (element) {
                     element.value = DEFAULT_VALUES[id];
                     // Trigger input event to update sliders/displays and validate
-                    const event = new Event('input', { bubbles: true });
-                    element.dispatchEvent(event);
+                    // This is handled by updateNumberInputAndDisplay now
+                    if (element.type === 'number' || element.tagName === 'SELECT') {
+                         const displayElementId = `${id}Value`;
+                         if (document.getElementById(displayElementId)) {
+                             updateNumberInputAndDisplay(id, DEFAULT_VALUES[id]);
+                         }
+                         validateInput(element); // Re-validate after setting value
+                    }
                 }
             }
             // Ensure currency display is updated after reset
@@ -1397,6 +1650,7 @@
             document.getElementById('errorMessage').style.display = 'none';
             document.getElementById('resultsSection').style.display = 'none';
             document.getElementById('adviceSection').style.display = 'none';
+            document.getElementById('savedScenariosSection').style.display = 'none';
 
 
             // Close accordion if open
@@ -1423,15 +1677,14 @@
                 const element = document.getElementById(id);
                 if (element) {
                     element.value = DEFAULT_VALUES[id];
-                    // Manually trigger update for sliders and their displays
-                    if (element.type === 'range' || element.type === 'number') {
+                    if (element.type === 'range' || element.type === 'number' || element.tagName === 'SELECT') {
                         const sliderId = `${id}Slider`;
-                        if (document.getElementById(sliderId)) { // If it's a number input with a linked slider
+                        if (document.getElementById(sliderId)) { 
                              updateSliderAndDisplay(sliderId, element.value);
-                        } else { // If it's just a number input (like carPrice)
+                        } else { 
                             const displayElementId = `${id}Value`;
                             const displayElement = document.getElementById(displayElementId);
-                            if (displayElement) { // Update its simple value display if it exists
+                            if (displayElement) { 
                                 displayElement.textContent = element.value;
                             }
                         }
@@ -1448,6 +1701,9 @@
 
             // Setup the accordion
             setupAccordion();
+
+            // Render saved scenarios on load if there are any
+            renderSavedScenarios();
         });
     </script>
 </body>
