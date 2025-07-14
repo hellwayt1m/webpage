@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Премиальный Калькулятор Сравнения Финансирования</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300,400,600&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💎</text></svg>">
+    <style>
+        /* Premium Theme */
+        :root {
+            --primary-color: #3498db; /* Soft Blue */
+            --primary-color-rgb: 52, 152, 219; /* For rgba usage */
+            --primary-dark: #2980b9;
+            --secondary-color: #7f8c8d; /* Muted Grey */
+            --background-color: #f8f9fa; /* Off-white background */
+            --card-background: #ffffff;
+            --border-color: #e0e0e0;
+            --text-color: #34495e; /* Darker text */
+            --heading-color: #2c3e50; /* Deep Blue */
+            --highlight-success: #2ecc71; /* Emerald Green */
+            --highlight-success-rgb: 46, 204, 113;
+            --highlight-warning: #f39c12; /* Orange */
+            --highlight-warning-rgb: 243, 156, 18;
+            --error-color: #e74c3c; /* Red */
+            --shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            --input-bg: #fdfdfd;
+            --input-border: #dcdcdc;
+            --input-focus-border: var(--primary-color);
+            --dark-mode-button-bg: #555;
+            --dark-mode-button-text: #eee;
+            --slider-track-bg: #e0e0e0;
+            --slider-thumb-bg: var(--primary-color);
+            --current-value-color: var(--secondary-color);
+            --accordion-header-bg: #f0f0f0;
+            --accordion-border: #d0d0d0;
+            --accordion-text: var(--text-color);
+            --table-header-bg: var(--primary-color);
+            --table-header-text: #fff;
+            --table-row-even-bg: #f9f9f9;
+            --advice-bg: var(--highlight-success);
+            --advice-text: #fff;
+        }
+
+        /* Dark Theme */
+        body.dark-theme {
+            --primary-color: #6cb6f7;
+            --primary-color-rgb: 108, 182, 247;
+            --primary-dark: #3a8fe2;
+            --secondary-color: #b0b8bf;
+            --background-color: #2b2b2b;
+            --card-background: #3a3a3a;
+            --border-color: #4a4a4a;
+            --text-color: #e0e0e0;
+            --heading-color: #a7d9ff;
+            --highlight-success: #58d68d;
+            --highlight-success-rgb: 88, 214, 141;
+            --highlight-warning: #f7dc6f;
+            --highlight-warning-rgb: 247, 220, 111;
+            --error-color: #ff9999;
+            --shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            --input-bg: #4a4a4a;
+            --input-border: #5c5c5c;
+            --dark-mode-button-bg: var(--primary-color);
+            --dark-mode-button-text: #2b2b2b;
+            --slider-track-bg: #5c5c5c;
+            --slider-thumb-bg: var(--primary-color);
+            --current-value-color: var(--secondary-color);
+            --accordion-header-bg: #4a4a4a;
+            --accordion-border: #5c5c5c;
+            --accordion-text: var(--text-color);
+            --table-header-bg: var(--primary-dark);
+            --table-header-text: #e0e0e0;
+            --table-row-even-bg: #404040;
+            --advice-bg: #3c9d64;
+            --advice-text: #e0e0e0;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 960px;
+            margin: 30px;
+            background-color: var(--card-background);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            position: relative; /* For theme toggle button positioning */
+        }
+
+        h1, h2 {
+            color: var(--heading-color);
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        h2 {
+            margin-top: 40px;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+            text-align: left;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 12px;
+        }
+
+        p {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--secondary-color);
+            font-size: 1.1em;
+        }
+
+        .input-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            background-color: var(--input-bg);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid var(--input-border);
+            position: relative;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--text-color);
+            font-size: 0.95em;
+        }
+
+        .input-group input::-webkit-outer-spin-button,
+        .input-group input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .input-group input[type="number"],
+        .input-group select {
+            width: calc(100% - 24px);
+            padding: 12px;
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            font-size: 1em;
+            box-sizing: border-box;
+            background-color: var(--card-background);
+            color: var(--text-color);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        .input-group input::placeholder {
+            color: #aaa;
+        }
+        
+        .input-group input:focus,
+        .input-group select:focus {
+            border-color: var(--input-focus-border);
+            outline: none;
+            box-shadow: 0 0 8px rgba(var(--primary-color-rgb), 0.3);
+        }
+        
+        .input-group.invalid input,
+        .input-group.invalid select {
+            border-color: var(--error-color);
+        }
+        
+        .input-sub-info {
+            font-size: 0.9em;
+            color: var(--secondary-color);
+            margin-top: 8px;
+            min-height: 1em;
+        }
+
+        .slider-wrapper {
+            margin-top: 15px;
+        }
+
+        .input-group input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            background: var(--slider-track-bg);
+            border-radius: 5px;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity .2s, background-color 0.3s ease;
+            padding: 0;
+            box-shadow: none; /* Override default input shadow */
+        }
+
+        .input-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--slider-thumb-bg);
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
+        }
+
+        .input-group input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--slider-thumb-bg);
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
+        }
+
+        .slider-value-display {
+            font-size: 0.9em;
+            color: var(--current-value-color);
+            margin-top: 5px;
+            text-align: center;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .calculate-button, .action-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 24px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            margin-top: 30px;
+            box-shadow: 0 6px 12px rgba(var(--primary-color-rgb), 0.4);
+            width: auto;
+            min-width: 150px;
+        }
+
+        .calculate-button:hover:not(:disabled), .action-button:hover:not(:disabled) {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(var(--primary-color-rgb), 0.5);
+        }
+
+        .calculate-button:disabled, .action-button:disabled {
+            background-color: #99c6e7;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .error-message {
+            color: var(--error-color);
+            background-color: rgba(var(--highlight-warning-rgb), 0.15);
+            border: 1px solid var(--error-color);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 25px;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        }
+
+        .results {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px dashed var(--border-color);
+            transition: border-color 0.3s ease;
+        }
+
+        .results h3 {
+            color: var(--heading-color);
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            text-align: left;
+        }
+
+        .results table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: var(--card-background);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .results th, .results td {
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            text-align: left;
+            transition: border-color 0.3s ease;
+        }
+
+        .results th {
+            background-color: var(--table-header-bg);
+            color: var(--table-header-text);
+            font-weight: 600;
+            white-space: nowrap;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .results td {
+            background-color: var(--card-background);
+            transition: background-color 0.3s ease;
+        }
+
+        .results tbody tr:nth-child(even) td {
+            background-color: var(--table-row-even-bg);
+        }
+
+        .comparison-table {
+            margin-top: 30px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .comparison-table table {
+            min-width: 600px;
+        }
+
+        .comparison-table th {
+            background-color: var(--primary-dark);
+        }
+
+        .highlight-best {
+            background-color: rgba(var(--highlight-success-rgb), 0.3) !important;
+            font-weight: 600;
+            color: var(--heading-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .highlight-worst {
+            background-color: rgba(var(--highlight-warning-rgb), 0.3) !important;
+            font-weight: 600;
+            color: var(--heading-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Tabs styling */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--border-color);
+            flex-wrap: wrap;
+            transition: border-color 0.3s ease;
+        }
+
+        .tab-button {
+            background-color: transparent;
+            border: none;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            color: var(--secondary-color);
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+            top: 2px;
+            flex-grow: 1;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .tab-button.active {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        .tab-button:hover:not(.active) {
+            color: var(--primary-dark);
+        }
+
+        .tab-content {
+            display: none;
+            padding-top: 20px;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Spinner styles */
+        .spinner {
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Tooltip styles */
+        .tooltip-icon {
+            cursor: help;
+            margin-left: 5px;
+            color: var(--secondary-color);
+            font-size: 0.9em;
+            position: relative;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .tooltip-text {
+            visibility: hidden;
+            width: 260px;
+            background-color: #444;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 10px 12px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -130px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.85em;
+            line-height: 1.5;
+            pointer-events: none;
+        }
+
+        .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -6px;
+            border-width: 6px;
+            border-style: solid;
+            border-color: #444 transparent transparent transparent;
+        }
+
+        .tooltip-icon:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Theme Toggle Button */
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: var(--dark-mode-button-bg);
+            color: var(--dark-mode-button-text);
+            border: none;
+            border-radius: 10px;
+            padding: 10px 18px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 500;
+            transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        /* Accordion Styles */
+        .accordion {
+            background-color: var(--accordion-header-bg);
+            color: var(--accordion-text);
+            cursor: pointer;
+            padding: 20px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 1em;
+            font-weight: 600;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            border-radius: 10px;
+            margin-top: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .accordion:hover {
+            background-color: #ddd;
+        }
+
+        .accordion.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        .accordion:after {
+            content: '\02C7'; /* Caret up */
+            font-size: 22px;
+            color: var(--accordion-text);
+            float: right;
+            margin-left: 5px;
+            transition: transform 0.3s ease;
+        }
+        
+        .accordion.active:after {
+            content: '\02C6'; /* Caret down */
+            transform: rotate(180deg);
+            color: white;
+        }
+
+        .panel {
+            padding: 0 20px;
+            background-color: var(--card-background);
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+            border: 1px solid var(--accordion-border);
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        .panel.active {
+            max-height: 1000px; /* Adjust based on content height */
+            padding: 20px;
+        }
+
+        .panel h4 {
+            color: var(--heading-color);
+            margin-top: 15px;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .panel ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .panel ul li {
+            margin-bottom: 10px;
+            color: var(--text-color);
+            font-size: 0.95em;
+        }
+
+        .panel ul li strong {
+            color: var(--primary-dark);
+        }
+
+        /* Advice Section */
+        .advice-section {
+            background-color: var(--card-background); /* Changed to card background for calmer look */
+            color: var(--text-color); /* Changed to regular text color */
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 35px;
+            text-align: left; /* Aligned left for more natural reading */
+            font-size: 0.95em; /* Smaller font size */
+            line-height: 1.6;
+            box-shadow: var(--shadow); /* Kept shadow for premium feel */
+            border: 1px solid var(--border-color); /* Added subtle border */
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .advice-section h3 {
+            color: var(--primary-color); /* Heading color from primary */
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-weight: 600;
+            text-align: center; /* Center the heading */
+            font-size: 1.2em; /* Slightly smaller heading for calm feel */
+        }
+
+        .advice-section p {
+            text-align: left; /* Ensure paragraphs are left-aligned */
+            margin-bottom: 1em;
+            color: var(--text-color);
+        }
+        .advice-section p:last-child {
+            margin-bottom: 0;
+        }
+
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px;
+                margin: 20px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            h2 {
+                font-size: 1.5em;
+            }
+            p {
+                font-size: 1em;
+            }
+            .input-section {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            .calculate-button, .action-button {
+                font-size: 1em;
+                padding: 12px 20px;
+                min-width: 100%;
+            }
+            .button-group {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .results th, .results td {
+                padding: 12px;
+                font-size: 0.9em;
+            }
+            .accordion {
+                padding: 15px;
+                font-size: 0.95em;
+            }
+            .panel {
+                padding: 15px;
+            }
+            .advice-section {
+                padding: 20px;
+                font-size: 0.9em; /* Even smaller on mobile for compact look */
+            }
+            .theme-toggle {
+                position: static;
+                margin-bottom: 20px;
+                display: block;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="theme-toggle" id="themeToggle">Переключить тему</button>
+        <h1>Премиальный Калькулятор Сравнения Финансирования</h1>
+        <p>Сравните общую переплату по различным вариантам финансирования техники и примите взвешенное решение.</p>
+
+        <div class="input-group">
+            <label for="carPrice">Стоимость техники:
+                <span class="tooltip-icon" aria-label="Полная стоимость приобретаемой техники.">&#9432;<span class="tooltip-text">Полная стоимость приобретаемой техники.</span></span>
+            </label>
+            <input type="number" id="carPrice" value="3000000" min="1000" placeholder="Например, 3 000 000" oninput="validateInput(this); updateInitialPaymentSums(); updateCurrencyDisplays();">
+            <div class="input-sub-info"></div>
+        </div>
+        <div class="input-group">
+            <label for="currencySelect">Валюта:
+                <span class="tooltip-icon" aria-label="Выберите валюту для отображения результатов. Курс обновляется автоматически.">&#9432;<span class="tooltip-text">Выберите валюту для отображения результатов. Курс обновляется автоматически.</span></span>
+            </label>
+            <select id="currencySelect" onchange="fetchExchangeRates(); updateCurrencyDisplays();">
+                <option value="RUB">Рубли (RUB)</option>
+                <option value="USD">Доллары (USD)</option>
+                <option value="EUR">Евро (EUR)</option>
+                <option value="KZT">Тенге (KZT)</option>
+            </select>
+            <div class="input-sub-info"></div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="openTab(event, 'leasingTab')">Лизинг</button>
+            <button class="tab-button" onclick="openTab(event, 'creditTab')">Кредит</button>
+            <button class="tab-button" onclick="openTab(event, 'loanTab')">Займ</button>
+        </div>
+
+        <div id="leasingTab" class="tab-content active">
+            <h2>Параметры лизинга</h2>
+            <div class="input-section">
+                <div class="input-group">
+                    <label for="leasingTerm">Срок лизинга (месяцы):
+                        <span class="tooltip-icon" aria-label="Общий срок, на который заключается договор лизинга.">&#9432;<span class="tooltip-text">Общий срок, на который заключается договор лизинга.</span></span>
+                    </label>
+                    <input type="number" id="leasingTerm" value="36" min="1" max="120" placeholder="Например, 36" oninput="validateInput(this); updateSliderAndDisplay('leasingTermSlider', this.value);">
+                    <div class="slider-wrapper">
+                        <input type="range" id="leasingTermSlider" min="1" max="120" value="36" oninput="updateNumberInputAndDisplay('leasingTerm', this.value); validateInput(document.getElementById('leasingTerm'));">
+                    </div>
+                    <div class="slider-value-display" id="leasingTermValue">36 месяцев</div>
+                </div>
+                <div class="input-group">
+                    <label for="initialPaymentLeasing">Первоначальный взнос по лизингу (%):
+                        <span class="tooltip-icon" aria-label="Часть стоимости техники, которую вы вносите сразу.">&#9432;<span class="tooltip-text">Часть стоимости техники, которую вы вносите сразу.</span></span>
+                    </label>
+                    <input type="number" id="initialPaymentLeasing" value="10" min="0" max="100" placeholder="Например, 10" oninput="validateInput(this); updateInitialPaymentSums(); updateSliderAndDisplay('initialPaymentLeasingSlider', this.value);">
+                    <div class="slider-wrapper">
+                        <input type="range" id="initialPaymentLeasingSlider" min="0" max="100" value="10" oninput="updateNumberInputAndDisplay('initialPaymentLeasing', this.value); validateInput(document.getElementById('initialPaymentLeasing')); updateInitialPaymentSums();">
+                    </div>
+                    <div class="slider-value-display" id="initialPaymentLeasingValue">10%</div>
+                    <div class="input-sub-info" id="initialPaymentLeasingSum"></div>
+                </div>
+                <div class="input-group">
+                    <label for="leasingRate">Удорожание по лизингу (% годовых):
+                        <span class="tooltip-icon" aria-label="Годовая ставка, определяющая общую переплату по лизинговому договору.">&#9432;<span class="tooltip-text">Годовая ставка, определяющая общую переплату по лизинговому договору.</span></span>
+                    </label>
+                    <input type="number" id="leasingRate" value="7" min="0" max="50" step="0.1" placeholder="Например, 7" oninput="validateInput(this); updateSliderAndDisplay('leasingRateSlider', this.value);">
+                    <div class="slider-wrapper">
+                        <input type="range" id="leasingRateSlider" min="0" max="50" value="7" step="0.1" oninput="updateNumberInputAndDisplay('leasingRate', this.value); validateInput(document.getElementById('leasingRate'));">
+                    </div>
+                    <div class="slider-value-display" id="leasingRateValue">7.0%</div>
+                </div>
+                <div class="input-group">
+                    <label for="leasingVatIncluded">НДС включен в удорожание?
+                        <span class="tooltip-icon" aria-label="Определяет, как НДС учитывается в расчете переплаты. Для юрлиц НДС часто подлежит возмещению.">&#9432;<span class="tooltip-text">Определяет, как НДС учитывается в расчете переплаты. Для юрлиц НДС часто подлежит возмещению.</span></span>
+                    </label>
+                    <select id="leasingVatIncluded" onchange="updateCurrencyDisplays();">
+                        <option value="yes">Да</option>
+                        <option value="no">Нет</option>
+                    </select>
+                    <div class="input-sub-info"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="creditTab" class="tab-content">
+            <h2>Параметры банковского кредита</h2>
+            <div class="input-section">
+                <div class="input-group">
+                    <label for="creditTerm">Срок кредита (месяцы):
+                        <span class="tooltip-icon" aria-label="Общий срок, на который вы берете банковский кредит.">&#9432;<span class="tooltip-text">Общий срок, на который вы берете банковский кредит.</span></span>
+                    </label>
+                    <input type="number" id="creditTerm" value="60" min="1" max="120" placeholder="Например, 60" oninput="validateInput(this); updateSliderAndDisplay('creditTermSlider', this.value);">
+                    <div class="slider-wrapper">
+                        <input type="range" id="creditTermSlider" min="1" max="120" value="60" oninput="updateNumberInputAndDisplay('creditTerm', this.value); validateInput(document.getElementById('creditTerm'));">
+                    </div>
+                    <div class="slider-value-display" id="creditTermValue">60 месяцев</div>
+                </div>
+                <div class="input-group">
+                    <label for="initialPaymentCredit">Первоначальный взнос по кредиту (%):
+                        <span class="tooltip-icon" aria-label="Процент от стоимости техники, вносимый вами сразу при оформлении кредита.">&#9432;<span class="tooltip-text">Процент от стоимости техники, вносимый вами сразу при оформлении кредита.</span></span>
+                    </label>
+                    <input type="number" id="initialPaymentCredit" value="20" min="0" max="100" placeholder="Например, 20" oninput="validateInput(this); updateInitialPaymentSums(); updateSliderAndDisplay('initialPaymentCreditSlider', this.value);">
+                    <div class="slider-wrapper">
+                        <input type="range" id="initialPaymentCreditSlider" min="0" max="100" value="20" oninput="updateNumberInputAndDisplay('initialPaymentCredit', this.value); validateInput(document.getElementById('initialPaymentCredit')); updateInitialPaymentSums();">
+                    </div>
+                    <div class="slider-value-display" id="initialPaymentCreditValue">20%</div>
+                    <div class="input-sub-info" id="initialPaymentCreditSum"></div>
+                </div>
+                <div class="input-group">
+                    <label for="creditRate">Процентная ставка по кредиту (% годовых):
+                        <span class="tooltip-icon" aria-label="Годовая процентная ставка банка по кредиту.">&#9432;<span class="tooltip-text">Годовая процентная ставка банка по кредиту.</span></span>
+                    </label>
+                    <input type="number" id="creditRate" value="15" min="0" max="50" step="0.1" placeholder="Например, 15" oninput="validateInput(this); updateSliderAndDisplay('creditRateSlider', this.value);">
+                    <div class="slider-wrapper">
+                        <input type="range" id="creditRateSlider" min="0" max="50" value="15" step="0.1" oninput="updateNumberInputAndDisplay('creditRate', this.value); validateInput(document.getElementById('creditRate'));">
+                    </div>
+                    <div class="slider-value-display" id="creditRateValue">15.0%</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="loanTab" class="tab-content">
+            <h2>Параметры займа</h2>
+            <div class="input-section">
+                <div class="input-group">
+                    <label for="loanTerm">Срок займа (месяцы):
+                        <span class="tooltip-icon" aria-label="Общий срок, на который вы берете займ.">&#9432;<span class="tooltip-text">Общий срок, на который вы берете займ.</span></span>
+                    </label>
+                    <input type="number" id="loanTerm" value="24" min="1" max="60" placeholder="Например, 24" oninput="validateInput(this); updateSliderAndDisplay('loanTermSlider', this.value);">
+                    <div class="slider-wrapper">
+                        <input type="range" id="loanTermSlider" min="1" max="60" value="24" oninput="updateNumberInputAndDisplay('loanTerm', this.value); validateInput(document.getElementById('loanTerm'));">
+                    </div>
+                    <div class="slider-value-display" id="loanTermValue">24 месяца</div>
+                </div>
+                <div class="input-group">
+                    <label for="loanRate">Процентная ставка по займу (% годовых):
+                        <span class="tooltip-icon" aria-label="Годовая процентная ставка по займу.">&#9432;<span class="tooltip-text">Годовая процентная ставка по займу.</span></span>
+                    </label>
+                    <input type="number" id="loanRate" value="25" min="0" max="100" step="0.1" placeholder="Например, 25" oninput="validateInput(this); updateSliderAndDisplay('loanRateSlider', this.value);">
+                    <div class="slider-wrapper">
+                        <input type="range" id="loanRateSlider" min="0" max="100" value="25" step="0.1" oninput="updateNumberInputAndDisplay('loanRate', this.value); validateInput(document.getElementById('loanRate'));">
+                    </div>
+                    <div class="slider-value-display" id="loanRateValue">25.0%</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="calculate-button" id="calculateButton" onclick="handleCalculationClick()">
+                Рассчитать
+                <div class="spinner" id="spinner"></div>
+            </button>
+            <button class="action-button" onclick="resetToDefaults()">Сбросить к значениям по умолчанию</button>
+        </div>
+
+        <div id="errorMessage" class="error-message"></div>
+
+        <div class="results" id="resultsSection" style="display: none;">
+            <h2>Результаты расчета</h2>
+
+            <div id="comparisonResult" class="tab-content active">
+                <div class="comparison-table">
+                    <h3>Общая переплата по вариантам</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Вид финансирования</th>
+                                <th>Общая переплата (<span id="currencySymbolTable1">₽</span>)</th>
+                                <th>Переплата (% от стоимости техники)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Лизинг</td>
+                                <td id="compLeasingOverpayment"></td>
+                                <td id="compLeasingPercentage"></td>
+                            </tr>
+                            <tr>
+                                <td>Банковский кредит</td>
+                                <td id="compCreditOverpayment"></td>
+                                <td id="compCreditPercentage"></td>
+                            </tr>
+                            <tr>
+                                <td>Займ</td>
+                                <td id="compLoanOverpayment"></td>
+                                <td id="compLoanPercentage"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <button class="accordion" id="detailsAccordion">Детализация расчётов</button>
+            <div class="panel" id="calculationDetails">
+                <h4>Детализация лизинга</h4>
+                <ul id="leasingDetailsList">
+                    <li>Сумма финансирования: <strong></strong></li>
+                    <li>Расчетная ежемесячная переплата (без учета НДС): <strong></strong></li>
+                    <li>Общая сумма удорожания (без учета НДС): <strong></strong></li>
+                    <li>Итоговая переплата (с учетом НДС, если применимо): <strong></strong></li>
+                </ul>
+
+                <h4>Детализация кредита</h4>
+                <ul id="creditDetailsList">
+                    <li>Сумма кредита: <strong></strong></li>
+                    <li>Ежемесячный платеж: <strong></strong></li>
+                    <li>Общая сумма платежей: <strong></strong></li>
+                    <li>Итоговая переплата: <strong></strong></li>
+                </ul>
+
+                <h4>Детализация займа</h4>
+                <ul id="loanDetailsList">
+                    <li>Сумма займа: <strong></strong></li>
+                    <li>Ежемесячный платеж: <strong></strong></li>
+                    <li>Общая сумма платежей: <strong></strong></li>
+                    <li>Итоговая переплата: <strong></strong></li>
+                </ul>
+            </div>
+
+            <div class="advice-section" id="adviceSection" style="display: none;">
+                <h3>Наш совет:</h3>
+                <p id="adviceText"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let exchangeRates = { 'RUB': 1 }; // Default to RUB, fetch others
+        const API_KEY = 'YOUR_OPENEXCHANGERATES_API_KEY'; // !!! ЗАМЕНИТЕ НА ВАШ РЕАЛЬНЫЙ API КЛЮЧ !!!
+        const BASE_CURRENCY = 'RUB'; // Все расчеты будут внутри системы в RUB
+
+        const CURRENCY_SYMBOLS = {
+            'RUB': '₽',
+            'USD': '$',
+            'EUR': '€',
+            'KZT': '₸'
+        };
+
+        // Default values for resetting form
+        const DEFAULT_VALUES = {
+            carPrice: 3000000,
+            currencySelect: 'RUB',
+            leasingTerm: 36,
+            initialPaymentLeasing: 10,
+            leasingRate: 7,
+            leasingVatIncluded: 'yes',
+            creditTerm: 60,
+            initialPaymentCredit: 20,
+            creditRate: 15,
+            loanTerm: 24,
+            loanRate: 25
+        };
+
+        // --- Currency and Formatting Functions ---
+        async function fetchExchangeRates() {
+            if (API_KEY === 'YOUR_OPENEXCHANGERATES_API_KEY' || API_KEY === '') {
+                console.warn('Open Exchange Rates API Key не установлен или пуст. Конвертация валют будет использовать заглушечные курсы.');
+                // Fallback / Mock rates if API key is missing or empty
+                exchangeRates = { 'RUB': 1, 'USD': 90, 'EUR': 100, 'KZT': 0.2 }; 
+                return;
+            }
+            try {
+                const response = await fetch(`https://open.er-api.com/v6/latest/${BASE_CURRENCY}?app_id=${API_KEY}`);
+                if (!response.ok) {
+                    console.error(`Ошибка HTTP! Статус: ${response.status}. Используются заглушечные курсы.`);
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                if (data.rates) {
+                    exchangeRates = data.rates;
+                    console.log('Курсы валют успешно получены:', exchangeRates);
+                } else {
+                    console.warn('API не вернул курсы. Используются заглушечные курсы.');
+                    exchangeRates = { 'RUB': 1, 'USD': 90, 'EUR': 100, 'KZT': 0.2 };
+                }
+            } catch (error) {
+                console.error("Не удалось получить курсы валют:", error);
+                // Fallback to mock rates if API fails or other error
+                exchangeRates = { 'RUB': 1, 'USD': 90, 'EUR': 100, 'KZT': 0.2 };
+            }
+        }
+
+        function getCurrencySymbol(currencyCode) {
+            return CURRENCY_SYMBOLS[currencyCode] || currencyCode;
+        }
+
+        function convertToSelectedCurrency(amountRub) {
+            const selectedCurrency = document.getElementById('currencySelect').value;
+            const rate = exchangeRates[selectedCurrency];
+            if (rate && !isNaN(amountRub)) {
+                return amountRub / rate;
+            }
+            return amountRub; // Return original if no rate or invalid amount
+        }
+
+        function formatCurrency(amountRub, includeSymbol = true, decimalPlaces = 2) {
+            if (isNaN(amountRub) || amountRub === null) return 'N/A';
+            const selectedCurrency = document.getElementById('currencySelect').value;
+            const convertedAmount = convertToSelectedCurrency(amountRub);
+            return new Intl.NumberFormat('ru-RU', { 
+                style: 'currency', 
+                currency: selectedCurrency, 
+                minimumFractionDigits: decimalPlaces, 
+                maximumFractionDigits: decimalPlaces 
+            }).format(convertedAmount);
+        }
+
+        function formatPercentage(value) {
+            if (isNaN(value) || value === null) return 'N/A';
+            return new Intl.NumberFormat('ru-RU', { style: 'percent', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value / 100);
+        }
+
+        function updateCurrencyDisplays() {
+            const currentCurrency = document.getElementById('currencySelect').value;
+            const symbol = getCurrencySymbol(currentCurrency);
+
+            // Update all currency symbol displays in tables/charts
+            document.querySelectorAll('[id^="currencySymbol"]').forEach(el => el.textContent = symbol);
+
+            // Re-render initial payment sums with new currency
+            updateInitialPaymentSums();
+            // Re-calculate and display results if already shown
+            if (document.getElementById('resultsSection').style.display === 'block') {
+                 calculateComparison();
+            }
+        }
+
+        // --- Input and Slider Synchronization ---
+        function updateSliderAndDisplay(sliderId, value) {
+            const slider = document.getElementById(sliderId);
+            const displayElementId = sliderId.replace('Slider', 'Value');
+            const displayElement = document.getElementById(displayElementId);
+            
+            slider.value = value;
+            if (displayElement) {
+                if (sliderId.includes('Term')) {
+                    displayElement.textContent = `${value} месяцев`;
+                } else if (sliderId.includes('Rate') || sliderId.includes('Payment')) {
+                    displayElement.textContent = `${parseFloat(value).toFixed(1)}%`;
+                }
+            }
+        }
+
+        function updateNumberInputAndDisplay(numberInputId, value) {
+            const numberInput = document.getElementById(numberInputId);
+            const sliderId = `${numberInputId}Slider`;
+            const displayElementId = `${numberInputId}Value`;
+            const displayElement = document.getElementById(displayElementId);
+
+            numberInput.value = value;
+            if (document.getElementById(sliderId)) {
+                document.getElementById(sliderId).value = value;
+            }
+            
+            if (displayElement) {
+                if (numberInputId.includes('Term')) {
+                    displayElement.textContent = `${value} месяцев`;
+                } else if (numberInputId.includes('Rate') || numberInputId.includes('Payment')) {
+                    displayElement.textContent = `${parseFloat(value).toFixed(1)}%`;
+                }
+            }
+        }
+
+        // --- Validation ---
+        function validateInput(inputElement) {
+            const value = parseFloat(inputElement.value);
+            const min = parseFloat(inputElement.min);
+            const max = parseFloat(inputElement.max);
+            const parentGroup = inputElement.closest('.input-group');
+
+            // Check for valid number, min, and max
+            const isValid = !isNaN(value) && value >= min && (isNaN(max) || value <= max);
+
+            if (!isValid) {
+                parentGroup.classList.add('invalid');
+            } else {
+                parentGroup.classList.remove('invalid');
+            }
+            return isValid;
+        }
+
+        function validateAllInputs() {
+            let allInputsValid = true;
+            document.querySelectorAll('.input-group input[type="number"]').forEach(input => {
+                if (!validateInput(input)) {
+                    allInputsValid = false;
+                }
+            });
+            return allInputsValid;
+        }
+
+        // --- Tab Management ---
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                if (tabcontent[i].id.endsWith("Tab") && tabcontent[i].closest('#resultsSection') === null) { 
+                    tabcontent[i].style.display = "none";
+                }
+            }
+            tablinks = document.getElementsByClassName("tab-button");
+            for (i = 0; i < tablinks.length; i++) {
+                if (!tablinks[i].closest('#resultsSection')) { 
+                    tablinks[i].classList.remove("active");
+                }
+            }
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.classList.add("active");
+        }
+
+        // --- Calculation Logic ---
+        function updateInitialPaymentSums() {
+            const carPrice = parseFloat(document.getElementById('carPrice').value);
+            const initialPaymentLeasingPercent = parseFloat(document.getElementById('initialPaymentLeasing').value);
+            const initialPaymentCreditPercent = parseFloat(document.getElementById('initialPaymentCredit').value);
+
+            if (!isNaN(carPrice) && carPrice > 0) {
+                if (!isNaN(initialPaymentLeasingPercent)) {
+                    const leasingSum = carPrice * (initialPaymentLeasingPercent / 100);
+                    document.getElementById('initialPaymentLeasingSum').textContent = `Сумма: ${formatCurrency(leasingSum)}`;
+                } else {
+                    document.getElementById('initialPaymentLeasingSum').textContent = '';
+                }
+                if (!isNaN(initialPaymentCreditPercent)) {
+                    const creditSum = carPrice * (initialPaymentCreditPercent / 100);
+                    document.getElementById('initialPaymentCreditSum').textContent = `Сумма: ${formatCurrency(creditSum)}`;
+                } else {
+                    document.getElementById('initialPaymentCreditSum').textContent = '';
+                }
+            } else {
+                document.getElementById('initialPaymentLeasingSum').textContent = '';
+                document.getElementById('initialPaymentCreditSum').textContent = '';
+            }
+        }
+
+        // Function to calculate an annuity loan payment
+        function calculateAnnuityPayment(principal, annualRate, months) {
+            if (annualRate === 0 || months === 0) {
+                return principal / months; // If 0 rate or 0 months, it's just principal divided by months
+            }
+            const monthlyRate = annualRate / 100 / 12;
+            if (monthlyRate === 0) return principal / months; // Avoid division by zero for very small rates
+            return principal * (monthlyRate / (1 - Math.pow(1 + monthlyRate, -months)));
+        }
+
+        let calculationResults = {}; // To store detailed results for the accordion
+        let comparisonData = {}; // To store simplified results for advice
+
+        function handleCalculationClick() {
+            const calculateButton = document.getElementById('calculateButton');
+            const spinner = document.getElementById('spinner');
+            const resultsSection = document.getElementById('resultsSection');
+            const errorMessageElement = document.getElementById('errorMessage');
+
+            if (!validateAllInputs()) {
+                errorMessageElement.textContent = 'Пожалуйста, исправьте ошибки во введённых данных.';
+                errorMessageElement.style.display = 'block';
+                resultsSection.style.display = 'none';
+                return;
+            }
+
+            spinner.style.display = 'inline-block';
+            calculateButton.disabled = true;
+            resultsSection.style.display = 'none'; 
+            errorMessageElement.style.display = 'none'; 
+
+            setTimeout(() => {
+                calculateComparison();
+                spinner.style.display = 'none';
+                calculateButton.disabled = false;
+            }, 500); 
+        }
+
+        function calculateComparison() {
+            const carPrice = parseFloat(document.getElementById('carPrice').value);
+
+            // Leasing parameters
+            const leasingTermMonths = parseFloat(document.getElementById('leasingTerm').value);
+            const initialPaymentLeasingPercent = parseFloat(document.getElementById('initialPaymentLeasing').value);
+            const leasingRate = parseFloat(document.getElementById('leasingRate').value);
+            const leasingVatIncluded = document.getElementById('leasingVatIncluded').value === 'yes';
+
+            // Credit parameters
+            const creditTermMonths = parseFloat(document.getElementById('creditTerm').value);
+            const initialPaymentCreditPercent = parseFloat(document.getElementById('initialPaymentCredit').value);
+            const creditRate = parseFloat(document.getElementById('creditRate').value);
+
+            // Loan parameters
+            const loanTermMonths = parseFloat(document.getElementById('loanTerm').value);
+            const loanRate = parseFloat(document.getElementById('loanRate').value);
+
+            // --- Leasing Calculation ---
+            const initialPaymentLeasingSum = carPrice * (initialPaymentLeasingPercent / 100);
+            const leasingFinancingAmount = carPrice - initialPaymentLeasingSum;
+            
+            let totalLeasingOverpayment = 0;
+            let monthlyLeasingOverpaymentRaw = 0; // Overpayment per month before VAT
+            let totalLeasingOverpaymentRaw = 0; // Total overpayment before VAT
+
+            if (leasingRate > 0) {
+                // Simplified leasing calculation: assume simple interest on financing amount for overpayment
+                totalLeasingOverpaymentRaw = leasingFinancingAmount * (leasingRate / 100) * (leasingTermMonths / 12);
+                
+                if (leasingVatIncluded) {
+                    totalLeasingOverpayment = totalLeasingOverpaymentRaw; // VAT is considered part of the rate
+                } else {
+                    totalLeasingOverpayment = totalLeasingOverpaymentRaw * 1.20; // Add 20% VAT
+                }
+                monthlyLeasingOverpaymentRaw = totalLeasingOverpaymentRaw / leasingTermMonths;
+            } else {
+                totalLeasingOverpayment = 0;
+                monthlyLeasingOverpaymentRaw = 0;
+            }
+
+            const realLeasingPercentage = (totalLeasingOverpayment / carPrice) * 100;
+
+            document.getElementById('compLeasingOverpayment').textContent = formatCurrency(totalLeasingOverpayment);
+            document.getElementById('compLeasingPercentage').textContent = formatPercentage(realLeasingPercentage);
+
+            // --- Credit Calculation ---
+            const initialPaymentCreditSum = carPrice * (initialPaymentCreditPercent / 100);
+            const creditAmount = carPrice - initialPaymentCreditSum;
+            
+            const creditMonthlyPayment = calculateAnnuityPayment(creditAmount, creditRate, creditTermMonths);
+            const creditOverpayment = (creditMonthlyPayment * creditTermMonths) - creditAmount;
+            const realCreditPercentage = (creditOverpayment / carPrice) * 100; 
+
+            document.getElementById('compCreditOverpayment').textContent = formatCurrency(creditOverpayment);
+            document.getElementById('compCreditPercentage').textContent = formatPercentage(realCreditPercentage);
+
+            // --- Loan Calculation ---
+            // For simplicity, loan often covers full price, or a portion determined by loan terms not covered by initial payment.
+            // Here, we assume loan is for the full car price for comparison if no explicit loan initial payment.
+            // If the user expects to take a loan *after* an initial payment, adjust loanAmount calculation accordingly.
+            const loanAmount = carPrice; 
+            
+            const loanMonthlyPayment = calculateAnnuityPayment(loanAmount, loanRate, loanTermMonths);
+            const loanOverpayment = (loanMonthlyPayment * loanTermMonths) - loanAmount;
+            const realLoanPercentage = (loanOverpayment / carPrice) * 100;
+
+            document.getElementById('compLoanOverpayment').textContent = formatCurrency(loanOverpayment);
+            document.getElementById('compLoanPercentage').textContent = formatPercentage(realLoanPercentage);
+
+            // Highlight the best and worst option (based on Total Overpayment)
+            const options = [
+                { type: 'Leasing', overpayment: totalLeasingOverpayment, percentage: realLeasingPercentage },
+                { type: 'Credit', overpayment: creditOverpayment, percentage: realCreditPercentage },
+                { type: 'Loan', overpayment: loanOverpayment, percentage: realLoanPercentage }
+            ];
+
+            const sortedOptions = [...options].sort((a, b) => a.overpayment - b.overpayment);
+            const minOverpayment = sortedOptions[0].overpayment;
+            const maxOverpayment = sortedOptions[sortedOptions.length - 1].overpayment;
+            
+            document.querySelectorAll('.highlight-best, .highlight-worst').forEach(el => el.classList.remove('highlight-best', 'highlight-worst'));
+
+            options.forEach(option => {
+                const overpaymentElement = document.getElementById(`comp${option.type}Overpayment`);
+                const percentageElement = document.getElementById(`comp${option.type}Percentage`);
+                
+                if (option.overpayment === minOverpayment) {
+                    overpaymentElement.classList.add('highlight-best');
+                    percentageElement.classList.add('highlight-best');
+                } else if (option.overpayment === maxOverpayment && minOverpayment !== maxOverpayment) { 
+                    overpaymentElement.classList.add('highlight-worst');
+                    percentageElement.classList.add('highlight-worst');
+                }
+            });
+
+            // Store data for detailed results and advice
+            comparisonData = {
+                Leasing: { overpayment: totalLeasingOverpayment, percentage: realLeasingPercentage },
+                Credit: { overpayment: creditOverpayment, percentage: realCreditPercentage },
+                Loan: { overpayment: loanOverpayment, percentage: realLoanPercentage }
+            };
+
+            calculationResults = {
+                leasing: {
+                    financingAmount: leasingFinancingAmount,
+                    estimatedMonthlyOverpayment: monthlyLeasingOverpaymentRaw, // For transparency
+                    totalOverpaymentRaw: totalLeasingOverpaymentRaw,
+                    totalOverpaymentFinal: totalLeasingOverpayment,
+                    // Note: This totalPayments is simplified. For true leasing, it's more complex with residual value etc.
+                    totalPayments: leasingFinancingAmount + totalLeasingOverpayment 
+                },
+                credit: {
+                    amount: creditAmount,
+                    monthlyPayment: creditMonthlyPayment,
+                    totalPayments: creditMonthlyPayment * creditTermMonths,
+                    overpayment: creditOverpayment
+                },
+                loan: {
+                    amount: loanAmount,
+                    monthlyPayment: loanMonthlyPayment,
+                    totalPayments: loanMonthlyPayment * loanTermMonths,
+                    overpayment: loanOverpayment
+                }
+            };
+
+            updateCalculationDetails(); // Update the accordion content
+            updateAdviceSection(); // Update the advice section
+            document.getElementById('resultsSection').style.display = 'block';
+        }
+
+        // --- Accordion Logic ---
+        function setupAccordion() {
+            const acc = document.getElementById("detailsAccordion");
+            const panel = document.getElementById("calculationDetails");
+            
+            acc.addEventListener("click", function() {
+                this.classList.toggle("active");
+                panel.classList.toggle("active");
+            });
+        }
+
+        function updateCalculationDetails() {
+            // Leasing Details
+            document.getElementById('leasingDetailsList').children[0].innerHTML = `Сумма финансирования: <strong>${formatCurrency(calculationResults.leasing.financingAmount)}</strong>`;
+            document.getElementById('leasingDetailsList').children[1].innerHTML = `Расчетная ежемесячная переплата (без учета НДС): <strong>${formatCurrency(calculationResults.leasing.estimatedMonthlyOverpayment, true, 2)}</strong>`;
+            document.getElementById('leasingDetailsList').children[2].innerHTML = `Общая сумма удорожания (без учета НДС): <strong>${formatCurrency(calculationResults.leasing.totalOverpaymentRaw)}</strong>`;
+            document.getElementById('leasingDetailsList').children[3].innerHTML = `Итоговая переплата (с учетом НДС, если применимо): <strong>${formatCurrency(calculationResults.leasing.totalOverpaymentFinal)}</strong>`;
+
+            // Credit Details
+            document.getElementById('creditDetailsList').children[0].innerHTML = `Сумма кредита: <strong>${formatCurrency(calculationResults.credit.amount)}</strong>`;
+            document.getElementById('creditDetailsList').children[1].innerHTML = `Ежемесячный платеж: <strong>${formatCurrency(calculationResults.credit.monthlyPayment, true, 2)}</strong>`;
+            document.getElementById('creditDetailsList').children[2].innerHTML = `Общая сумма платежей: <strong>${formatCurrency(calculationResults.credit.totalPayments)}</strong>`;
+            document.getElementById('creditDetailsList').children[3].innerHTML = `Итоговая переплата: <strong>${formatCurrency(calculationResults.credit.overpayment)}</strong>`;
+
+            // Loan Details
+            document.getElementById('loanDetailsList').children[0].innerHTML = `Сумма займа: <strong>${formatCurrency(calculationResults.loan.amount)}</strong>`;
+            document.getElementById('loanDetailsList').children[1].innerHTML = `Ежемесячный платеж: <strong>${formatCurrency(calculationResults.loan.monthlyPayment, true, 2)}</strong>`;
+            document.getElementById('loanDetailsList').children[2].innerHTML = `Общая сумма платежей: <strong>${formatCurrency(calculationResults.loan.totalPayments)}</strong>`;
+            document.getElementById('loanDetailsList').children[3].innerHTML = `Итоговая переплата: <strong>${formatCurrency(calculationResults.loan.overpayment)}</strong>`;
+        }
+
+        // --- Advice Section Logic ---
+        function updateAdviceSection() {
+            const adviceSection = document.getElementById('adviceSection');
+            const adviceTextElement = document.getElementById('adviceText');
+
+            if (Object.keys(comparisonData).length === 0) {
+                adviceSection.style.display = 'none';
+                return;
+            }
+
+            let bestOption = null;
+            let minOverpayment = Infinity;
+
+            // Find the best option
+            for (const key in comparisonData) {
+                if (comparisonData[key].overpayment < minOverpayment) {
+                    minOverpayment = comparisonData[key].overpayment;
+                    bestOption = key;
+                }
+            }
+
+            let adviceHtml = '';
+            
+            // General advice on financing types
+            const generalAdvice = `
+                <p>Выбор оптимального способа финансирования зависит от ваших индивидуальных потребностей, финансового положения и целей. Помимо общей переплаты, важно учитывать гибкость условий, требования к обеспечению и скорость оформления.</p>
+                <p>Приведенные расчеты являются оценочными. Для получения точных данных всегда обращайтесь к официальным предложениям финансовых организаций.</p>
+            `;
+
+            if (bestOption) {
+                const bestOverpayment = formatCurrency(comparisonData[bestOption].overpayment);
+                const bestPercentage = formatPercentage(comparisonData[bestOption].percentage);
+
+                let translatedOption = '';
+                switch (bestOption) {
+                    case 'Leasing': translatedOption = 'лизингу'; break;
+                    case 'Credit': translatedOption = 'банковскому кредиту'; break;
+                    case 'Loan': translatedOption = 'займу'; break;
+                }
+
+                adviceHtml += `<p>Согласно текущим расчетам, **наиболее экономичным вариантом** по общей переплате является **${translatedOption}**. Общая переплата по этому варианту составляет **${bestOverpayment}** (${bestPercentage} от стоимости техники).</p>`;
+                
+                // Add specific advice for each option
+                if (bestOption === 'Leasing') {
+                    adviceHtml += `<p>Лизинг часто выгоден для юридических лиц и ИП благодаря возможности получения налоговых преференций (например, возмещения НДС по лизинговым платежам и ускоренной амортизации), что может значительно снизить общие расходы. Однако он предполагает сохранение права собственности на предмет лизинга у лизинговой компании до полного погашения договора.</p>`;
+                } else if (bestOption === 'Credit') {
+                    adviceHtml += `<p>Банковский кредит, как правило, предлагает более предсказуемые ежемесячные платежи и право собственности на технику сразу переходит к вам. Этот вариант может быть удобен, если у вас хорошая кредитная история и вы предпочитаете владеть активом с момента покупки. Однако процесс оформления может быть более длительным и требовать больше документов.</p>`;
+                } else if (bestOption === 'Loan') {
+                    adviceHtml += `<p>Займ может быть самым быстрым способом получения средств с минимальным пакетом документов. Он подходит для ситуаций, когда требуется оперативное финансирование, а сроки кредитования относительно короткие. Однако часто займы сопряжены с более высокой процентной ставкой по сравнению с банковскими кредитами, что приводит к большей общей переплате.</p>`;
+                }
+
+                adviceHtml += generalAdvice; // Add general advice at the end
+
+            } else {
+                adviceHtml = `<p>Не удалось определить наиболее выгодный вариант. Пожалуйста, убедитесь, что все необходимые данные введены корректно и попробуйте снова.</p>${generalAdvice}`;
+            }
+
+            adviceTextElement.innerHTML = adviceHtml;
+            adviceSection.style.display = 'block';
+        }
+
+
+        // --- Theme Toggle Logic ---
+        document.getElementById('themeToggle').addEventListener('click', () => {
+            document.body.classList.toggle('dark-theme');
+            if (document.body.classList.contains('dark-theme')) {
+                localStorage.setItem('theme', 'dark');
+            } else {
+                localStorage.setItem('theme', 'light');
+            }
+        });
+
+        // --- Reset to Defaults ---
+        function resetToDefaults() {
+            for (const id in DEFAULT_VALUES) {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.value = DEFAULT_VALUES[id];
+                    // Trigger input event to update sliders/displays and validate
+                    const event = new Event('input', { bubbles: true });
+                    element.dispatchEvent(event);
+                }
+            }
+            // Ensure currency display is updated after reset
+            updateCurrencyDisplays();
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('resultsSection').style.display = 'none';
+            document.getElementById('adviceSection').style.display = 'none';
+
+
+            // Close accordion if open
+            const acc = document.getElementById("detailsAccordion");
+            const panel = document.getElementById("calculationDetails");
+            if (acc.classList.contains('active')) {
+                acc.classList.remove('active');
+                panel.classList.remove('active');
+            }
+        }
+
+        // --- Initial Setup on Page Load ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Apply saved theme
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-theme');
+            }
+
+            // Fetch exchange rates
+            await fetchExchangeRates();
+            
+            // Set initial values and sync sliders/displays
+            for (const id in DEFAULT_VALUES) {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.value = DEFAULT_VALUES[id];
+                    // Manually trigger update for sliders and their displays
+                    if (element.type === 'range' || element.type === 'number') {
+                        const sliderId = `${id}Slider`;
+                        if (document.getElementById(sliderId)) { // If it's a number input with a linked slider
+                             updateSliderAndDisplay(sliderId, element.value);
+                        } else { // If it's just a number input (like carPrice)
+                            const displayElementId = `${id}Value`;
+                            const displayElement = document.getElementById(displayElementId);
+                            if (displayElement) { // Update its simple value display if it exists
+                                displayElement.textContent = element.value;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Initial updates for currency and initial payment sums
+            updateCurrencyDisplays();
+            updateInitialPaymentSums();
+            
+            // Activate the first tab
+            document.querySelector('.tabs .tab-button').click(); 
+
+            // Setup the accordion
+            setupAccordion();
+        });
+    </script>
+</body>
+</html>
